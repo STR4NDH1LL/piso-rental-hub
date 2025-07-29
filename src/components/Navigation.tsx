@@ -18,9 +18,12 @@ const Navigation = () => {
           
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium">
+            <button 
+              onClick={() => navigate("/features")}
+              className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
+            >
               Features
-            </a>
+            </button>
             <button 
               onClick={() => navigate("/about")}
               className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
