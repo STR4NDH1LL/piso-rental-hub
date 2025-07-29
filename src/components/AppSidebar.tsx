@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
@@ -119,13 +119,10 @@ const AppSidebar = () => {
                     asChild
                     className={isActive(item.url) ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}
                   >
-                    <a href={item.url} onClick={(e) => {
-                      e.preventDefault();
-                      navigate(item.url);
-                    }}>
+                    <Link to={item.url}>
                       <item.icon className="mr-2 h-4 w-4" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
