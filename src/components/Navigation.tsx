@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Navigation = () => {
+  const navigate = useNavigate();
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 py-2">
@@ -25,8 +27,19 @@ const Navigation = () => {
             <a href="#contact" className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium">
               Contact
             </a>
-            <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 mr-2"
+              onClick={() => navigate("/auth")}
+            >
               Log In
+            </Button>
+            <Button 
+              size="sm"
+              onClick={() => navigate("/auth")}
+            >
+              Get Started
             </Button>
           </div>
         </div>
