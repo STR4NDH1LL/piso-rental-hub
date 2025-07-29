@@ -1,9 +1,125 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Building2, CreditCard, Users, Wrench, TrendingUp, AlertTriangle } from "lucide-react";
 
+interface DashboardStats {
+  totalProperties: number;
+  occupiedProperties: number;
+  totalTenants: number;
+  monthlyIncome: number;
+  pendingMaintenance: number;
+}
+
+interface Property {
+  id: string;
+  name: string;
+  address: string;
+  bedrooms: number;
+  bathrooms: number;
+  rent_amount: number;
+  rent_currency: string;
+  property_type: string;
+  tenancies: Array<{
+    tenant: {
+      full_name: string;
+    };
+    status: string;
+  }>;
+}
+
 const LandlordDashboard = () => {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalProperties: 0,
+    occupiedProperties: 0,
+    totalTenants: 0,
+    monthlyIncome: 0,
+    pendingMaintenance: 0,
+  });
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch properties with tenancies
+      const { data: propertiesData } = await supabase
+        .from("properties")
+        .select(`
+          *,
+          tenancies!inner(
+            tenant_id,
+            status,
+            rent_amount,
+            profiles!tenancies_tenant_id_fkey(full_name)
+          )
+        `)
+        .eq("landlord_id", user.id)
+        .eq("tenancies.status", "active");
+
+      // Fetch all properties for stats
+      const { data: allProperties } = await supabase
+        .from("properties")
+        .select("*, tenancies(*)")
+        .eq("landlord_id", user.id);
+
+      // Fetch maintenance requests
+      const { data: maintenanceData } = await supabase
+        .from("maintenance_requests")
+        .select("*")
+        .eq("landlord_id", user.id)
+        .eq("status", "pending");
+
+      if (allProperties) {
+        const occupied = allProperties.filter(p => 
+          p.tenancies?.some((t: any) => t.status === "active")
+        ).length;
+        
+        const totalIncome = allProperties.reduce((sum, property) => {
+          const activeTenancy = property.tenancies?.find((t: any) => t.status === "active");
+          return sum + (activeTenancy?.rent_amount || 0);
+        }, 0);
+
+        setStats({
+          totalProperties: allProperties.length,
+          occupiedProperties: occupied,
+          totalTenants: occupied,
+          monthlyIncome: totalIncome,
+          pendingMaintenance: maintenanceData?.length || 0,
+        });
+
+        // Set properties for display (limit to recent 2)
+        const recentProperties = (propertiesData || []).slice(0, 2).map(property => ({
+          ...property,
+          tenancies: property.tenancies.map((tenancy: any) => ({
+            tenant: tenancy.profiles,
+            status: tenancy.status
+          }))
+        }));
+        
+        setProperties(recentProperties);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading dashboard...</div>;
+  }
+
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
@@ -16,8 +132,8 @@ const LandlordDashboard = () => {
               </div>
               <div>
                 <h3 className="font-semibold">Properties</h3>
-                <p className="text-2xl font-bold">12</p>
-                <p className="text-sm text-muted-foreground">3 vacant</p>
+                <p className="text-2xl font-bold">{stats.totalProperties}</p>
+                <p className="text-sm text-muted-foreground">{stats.totalProperties - stats.occupiedProperties} vacant</p>
               </div>
             </div>
           </CardContent>
@@ -31,7 +147,7 @@ const LandlordDashboard = () => {
               </div>
               <div>
                 <h3 className="font-semibold">Tenants</h3>
-                <p className="text-2xl font-bold">24</p>
+                <p className="text-2xl font-bold">{stats.totalTenants}</p>
                 <p className="text-sm text-muted-foreground">All active</p>
               </div>
             </div>
@@ -46,7 +162,7 @@ const LandlordDashboard = () => {
               </div>
               <div>
                 <h3 className="font-semibold">Monthly Income</h3>
-                <p className="text-2xl font-bold">£18,400</p>
+                <p className="text-2xl font-bold">£{stats.monthlyIncome.toLocaleString()}</p>
                 <p className="text-sm text-green-600 flex items-center">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +8.2%
@@ -64,7 +180,7 @@ const LandlordDashboard = () => {
               </div>
               <div>
                 <h3 className="font-semibold">Maintenance</h3>
-                <p className="text-2xl font-bold">7</p>
+                <p className="text-2xl font-bold">{stats.pendingMaintenance}</p>
                 <p className="text-sm text-muted-foreground">Pending requests</p>
               </div>
             </div>
@@ -113,12 +229,12 @@ const LandlordDashboard = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Occupancy Rate</span>
+                  <span className="text-sm font-medium">Occupancy Rate</span>
                 <div className="flex items-center gap-2">
                   <div className="w-24 bg-muted rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: "75%" }}></div>
+                    <div className="bg-primary h-2 rounded-full" style={{ width: `${stats.totalProperties > 0 ? (stats.occupiedProperties / stats.totalProperties) * 100 : 0}%` }}></div>
                   </div>
-                  <span className="text-sm font-semibold">75%</span>
+                  <span className="text-sm font-semibold">{stats.totalProperties > 0 ? Math.round((stats.occupiedProperties / stats.totalProperties) * 100) : 0}%</span>
                 </div>
               </div>
               
@@ -157,33 +273,37 @@ const LandlordDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h4 className="font-semibold">Flat 2A, Victoria Street</h4>
-                <p className="text-sm text-muted-foreground">London, SW1E 5ND • 2 bed, 1 bath</p>
-                <p className="text-sm">Tenant: Sarah Johnson</p>
+            {properties.length > 0 ? (
+              properties.map((property) => (
+                <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-semibold">{property.name}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {property.address} • {property.bedrooms} bed, {property.bathrooms} bath
+                    </p>
+                    {property.tenancies.length > 0 ? (
+                      <p className="text-sm">Tenant: {property.tenancies[0].tenant.full_name}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Available</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">£{property.rent_amount.toLocaleString()}/month</p>
+                    <Badge variant={property.tenancies.length > 0 ? "default" : "secondary"}>
+                      {property.tenancies.length > 0 ? "Occupied" : "Vacant"}
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No properties found
               </div>
-              <div className="text-right">
-                <p className="font-semibold">£1,200/month</p>
-                <Badge>Occupied</Badge>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h4 className="font-semibold">House 15, Oak Avenue</h4>
-                <p className="text-sm text-muted-foreground">Manchester, M1 2AB • 3 bed, 2 bath</p>
-                <p className="text-sm text-muted-foreground">Available</p>
-              </div>
-              <div className="text-right">
-                <p className="font-semibold">£950/month</p>
-                <Badge variant="secondary">Vacant</Badge>
-              </div>
-            </div>
+            )}
           </div>
           
           <div className="mt-4 pt-4 border-t">
-            <Button className="w-full">View All Properties</Button>
+            <Button className="w-full" onClick={() => navigate("/properties")}>View All Properties</Button>
           </div>
         </CardContent>
       </Card>
