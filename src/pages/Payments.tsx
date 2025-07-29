@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, TrendingUp, Calendar, DollarSign } from "lucide-react";
+import { CreditCard, TrendingUp, Calendar, DollarSign, ArrowLeft } from "lucide-react";
 
 const Payments = () => {
   const [profile, setProfile] = useState<{ role: string } | null>(null);
@@ -33,7 +33,13 @@ const Payments = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Payments</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Button>
+        <h1 className="text-3xl font-bold">Payments</h1>
+      </div>
       
       <div className="space-y-6">
         {/* Payment Statistics */}

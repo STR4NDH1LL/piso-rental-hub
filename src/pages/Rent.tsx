@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, CreditCard, AlertCircle } from "lucide-react";
+import { Calendar, CreditCard, AlertCircle, ArrowLeft } from "lucide-react";
 
 const Rent = () => {
   const [profile, setProfile] = useState<{ role: string } | null>(null);
@@ -33,9 +33,15 @@ const Rent = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">
-        {profile.role === "tenant" ? "Upcoming Rent" : "Rent Management"}
-      </h1>
+      <div className="flex items-center gap-4 mb-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Button>
+        <h1 className="text-3xl font-bold">
+          {profile.role === "tenant" ? "Upcoming Rent" : "Rent Management"}
+        </h1>
+      </div>
       
       {profile.role === "tenant" ? (
         <div className="space-y-6">

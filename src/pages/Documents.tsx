@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download, Upload, Eye } from "lucide-react";
+import { FileText, Download, Upload, Eye, ArrowLeft } from "lucide-react";
 
 const Documents = () => {
   const [profile, setProfile] = useState<{ role: string } | null>(null);
@@ -34,7 +34,13 @@ const Documents = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Documents</h1>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold">Documents</h1>
+        </div>
         {profile.role === "landlord" && (
           <Button>
             <Upload className="h-4 w-4 mr-2" />
