@@ -121,6 +121,18 @@ const MaintenanceTicketChat = ({ open, onOpenChange, ticket }: MaintenanceTicket
         photoUrls = await uploadPhotos(user.id);
       }
 
+      // Insert message into database
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          recipient_id: ticket.id, // This should be the other party's ID
+          content: message,
+          maintenance_request_id: ticket.id
+        });
+
+      if (messageError) throw messageError;
+
       const newMessage = {
         id: messages.length + 1,
         type: "user",
@@ -148,23 +160,39 @@ const MaintenanceTicketChat = ({ open, onOpenChange, ticket }: MaintenanceTicket
     }
   };
 
-  const handleStatusUpdate = () => {
+  const handleStatusUpdate = async () => {
     if (newStatus === ticket.status) return;
 
-    const statusMessage = {
-      id: messages.length + 1,
-      type: "status",
-      content: `Status updated from "${ticket.status}" to "${newStatus}"`,
-      timestamp: "Just now",
-      sender: "System"
-    };
+    try {
+      // Update maintenance request status in database
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .update({ status: newStatus })
+        .eq('id', ticket.id);
 
-    setMessages(prev => [...prev, statusMessage]);
-    
-    toast({
-      title: "Status updated",
-      description: `Ticket status changed to ${newStatus}`
-    });
+      if (error) throw error;
+
+      const statusMessage = {
+        id: messages.length + 1,
+        type: "status",
+        content: `Status updated from "${ticket.status}" to "${newStatus}"`,
+        timestamp: "Just now",
+        sender: "System"
+      };
+
+      setMessages(prev => [...prev, statusMessage]);
+      
+      toast({
+        title: "Status updated",
+        description: `Ticket status changed to ${newStatus}`
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   return (

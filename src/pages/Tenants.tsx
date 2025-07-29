@@ -8,6 +8,14 @@ import { Users, Mail, Phone, MessageCircle, CheckCircle, AlertCircle, ArrowLeft 
 
 const Tenants = () => {
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<{ role: string; user_id: string } | null>(null);
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    goodStanding: 0,
+    issues: 0,
+    activeChats: 0
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -16,9 +24,60 @@ const Tenants = () => {
         navigate("/auth");
         return;
       }
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("role, user_id")
+        .eq("user_id", user.id)
+        .single();
+      
+      if (data) {
+        setProfile(data);
+        await fetchTenants(data.user_id);
+      }
     };
     checkAuth();
   }, [navigate]);
+
+  const fetchTenants = async (landlordId: string) => {
+    try {
+      // Fetch tenancies with tenant profiles for this landlord
+      const { data: tenancies, error } = await supabase
+        .from("tenancies")
+        .select(`
+          *,
+          profiles!tenancies_tenant_id_fkey (full_name, email, phone),
+          properties (name, address)
+        `)
+        .eq("landlord_id", landlordId)
+        .eq("status", "active");
+
+      if (error) throw error;
+      
+      const tenantsData = tenancies || [];
+      setTenants(tenantsData);
+      
+      // Calculate stats
+      const total = tenantsData.length;
+      const goodStanding = tenantsData.filter(t => 
+        new Date(t.rent_due_date || new Date()) >= new Date()
+      ).length;
+      const issues = total - goodStanding;
+      
+      // Mock active chats for now
+      const activeChats = Math.floor(total * 0.3);
+      
+      setStats({
+        total,
+        goodStanding,
+        issues,
+        activeChats
+      });
+      
+    } catch (error) {
+      console.error('Error fetching tenants:', error);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -41,7 +100,7 @@ const Tenants = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Total Tenants</h3>
-                  <p className="text-2xl font-bold">24</p>
+                  <p className="text-2xl font-bold">{stats.total}</p>
                 </div>
               </div>
             </CardContent>
@@ -55,7 +114,7 @@ const Tenants = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Good Standing</h3>
-                  <p className="text-2xl font-bold">22</p>
+                  <p className="text-2xl font-bold">{stats.goodStanding}</p>
                 </div>
               </div>
             </CardContent>
@@ -69,7 +128,7 @@ const Tenants = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Issues</h3>
-                  <p className="text-2xl font-bold">2</p>
+                  <p className="text-2xl font-bold">{stats.issues}</p>
                 </div>
               </div>
             </CardContent>
@@ -83,7 +142,7 @@ const Tenants = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Active Chats</h3>
-                  <p className="text-2xl font-bold">8</p>
+                  <p className="text-2xl font-bold">{stats.activeChats}</p>
                 </div>
               </div>
             </CardContent>
@@ -98,121 +157,76 @@ const Tenants = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Sarah Johnson</h4>
-                    <p className="text-sm text-muted-foreground">Flat 2A, Victoria Street</p>
-                    <p className="text-sm text-muted-foreground">Lease: Jan 2023 - Jan 2025</p>
-                  </div>
+              {tenants.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No active tenants found
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-semibold">£1,200/month</p>
-                    <Badge>Good Standing</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Mail className="h-3 w-3 mr-1" />
-                      Email
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <MessageCircle className="h-3 w-3 mr-1" />
-                      Chat
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                    <Users className="h-5 w-5 text-red-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-red-800 dark:text-red-200">John Smith</h4>
-                    <p className="text-sm text-red-600 dark:text-red-300">House 10, Park Lane</p>
-                    <p className="text-sm text-red-600 dark:text-red-300">Rent overdue by 3 days</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-semibold">£1,100/month</p>
-                    <Badge variant="destructive">Payment Overdue</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="destructive">
-                      <Phone className="h-3 w-3 mr-1" />
-                      Call
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <MessageCircle className="h-3 w-3 mr-1" />
-                      Chat
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Michael Brown</h4>
-                    <p className="text-sm text-muted-foreground">Apartment 4B, Royal Gardens</p>
-                    <p className="text-sm text-muted-foreground">Lease: Mar 2023 - Mar 2025</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-semibold">£800/month</p>
-                    <Badge>Good Standing</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Mail className="h-3 w-3 mr-1" />
-                      Email
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <MessageCircle className="h-3 w-3 mr-1" />
-                      Chat
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Emma Wilson</h4>
-                    <p className="text-sm text-muted-foreground">Studio 7, City Centre</p>
-                    <p className="text-sm text-muted-foreground">Lease: Jun 2023 - Jun 2024</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-semibold">£750/month</p>
-                    <Badge>Good Standing</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Mail className="h-3 w-3 mr-1" />
-                      Email
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <MessageCircle className="h-3 w-3 mr-1" />
-                      Chat
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              ) : (
+                tenants.map((tenancy) => {
+                  const isOverdue = tenancy.rent_due_date && new Date(tenancy.rent_due_date) < new Date();
+                  const tenant = tenancy.profiles;
+                  const property = tenancy.properties;
+                  
+                  return (
+                    <div 
+                      key={tenancy.id} 
+                      className={`flex items-center justify-between p-4 border rounded-lg ${
+                        isOverdue ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                          isOverdue ? 'bg-red-100 dark:bg-red-900/20' : 'bg-primary/10'
+                        }`}>
+                          <Users className={`h-5 w-5 ${isOverdue ? 'text-red-600' : 'text-primary'}`} />
+                        </div>
+                        <div>
+                          <h4 className={`font-semibold ${
+                            isOverdue ? 'text-red-800 dark:text-red-200' : ''
+                          }`}>
+                            {tenant?.full_name || 'Unknown Tenant'}
+                          </h4>
+                          <p className={`text-sm ${
+                            isOverdue ? 'text-red-600 dark:text-red-300' : 'text-muted-foreground'
+                          }`}>
+                            {property?.name || 'Unknown Property'}
+                          </p>
+                          <p className={`text-sm ${
+                            isOverdue ? 'text-red-600 dark:text-red-300' : 'text-muted-foreground'
+                          }`}>
+                            Lease: {new Date(tenancy.lease_start_date).toLocaleDateString()} - {new Date(tenancy.lease_end_date).toLocaleDateString()}
+                            {isOverdue && ' • Rent overdue'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="font-semibold">£{tenancy.rent_amount}/month</p>
+                          <Badge variant={isOverdue ? "destructive" : "default"}>
+                            {isOverdue ? "Payment Overdue" : "Good Standing"}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2">
+                          {isOverdue && (
+                            <Button size="sm" variant="destructive">
+                              <Phone className="h-3 w-3 mr-1" />
+                              Call
+                            </Button>
+                          )}
+                          <Button size="sm" variant="outline">
+                            <Mail className="h-3 w-3 mr-1" />
+                            Email
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <MessageCircle className="h-3 w-3 mr-1" />
+                            Chat
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </CardContent>
         </Card>
