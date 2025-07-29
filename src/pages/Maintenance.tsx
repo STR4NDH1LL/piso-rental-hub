@@ -82,6 +82,11 @@ const Maintenance = () => {
       </div>
       
       <div className="space-y-6">
+        {/* Debug info */}
+        <div className="text-sm text-muted-foreground">
+          Debug: Profile: {profile?.role}, User ID: {profile?.user_id}, Tickets loaded: {tickets.length}
+        </div>
+        
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
@@ -92,7 +97,7 @@ const Maintenance = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Urgent</h3>
-                  <p className="text-2xl font-bold">2</p>
+                  <p className="text-2xl font-bold">{tickets.filter(t => t.priority === 'urgent').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -106,7 +111,7 @@ const Maintenance = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Pending</h3>
-                  <p className="text-2xl font-bold">5</p>
+                  <p className="text-2xl font-bold">{tickets.filter(t => t.status === 'Pending').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -120,7 +125,7 @@ const Maintenance = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">In Progress</h3>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-2xl font-bold">{tickets.filter(t => t.status === 'In Progress').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -134,7 +139,7 @@ const Maintenance = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Completed</h3>
-                  <p className="text-2xl font-bold">18</p>
+                  <p className="text-2xl font-bold">{tickets.filter(t => t.status === 'Completed').length}</p>
                 </div>
               </div>
             </CardContent>
