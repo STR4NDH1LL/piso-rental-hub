@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Plus, Users, Eye, Edit } from "lucide-react";
+import { Building2, Plus, Users, Eye, Edit, ArrowLeft } from "lucide-react";
 
 const Properties = () => {
   const navigate = useNavigate();
@@ -23,7 +23,13 @@ const Properties = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Properties</h1>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold">Properties</h1>
+        </div>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Add Property

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Send, User, Plus } from "lucide-react";
+import { MessageCircle, Send, User, Plus, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const Messaging = () => {
@@ -24,7 +24,13 @@ const Messaging = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Message Center</h1>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold">Message Center</h1>
+        </div>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           New Message
