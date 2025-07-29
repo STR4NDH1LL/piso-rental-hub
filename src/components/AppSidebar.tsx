@@ -105,6 +105,17 @@ const AppSidebar = () => {
 
   return (
     <Sidebar className="w-60" collapsible="icon">
+      {/* Logo Section */}
+      <div className="p-4 border-b">
+        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
+          <img 
+            src="/lovable-uploads/7412162f-de95-47ed-9113-ff969ca9a62a.png" 
+            alt="Piso Logo" 
+            className="h-12 w-auto"
+          />
+        </div>
+      </div>
+
       <SidebarTrigger className="m-2 self-end" />
       
       <SidebarContent>
