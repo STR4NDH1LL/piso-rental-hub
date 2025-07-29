@@ -61,7 +61,7 @@ const AppSidebar = () => {
   }, []);
 
   const tenantItems = [
-    { title: "Current Properties", url: "/dashboard", icon: Home },
+    { title: "Dashboard", url: "/dashboard", icon: Home },
     { title: "Upcoming Rent", url: "/rent", icon: Calendar },
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Maintenance", url: "/maintenance", icon: Wrench },
