@@ -73,6 +73,7 @@ const AppSidebar = () => {
     { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
     { title: "Properties", url: "/properties", icon: Building2 },
     { title: "Tenants", url: "/tenants", icon: Users },
+    { title: "Calendar", url: "/calendar", icon: Calendar },
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Payments", url: "/payments", icon: Wallet },
     { title: "Maintenance", url: "/maintenance", icon: Wrench },

@@ -18,6 +18,7 @@ import Payments from "./pages/Payments";
 import Properties from "./pages/Properties";
 import Tenants from "./pages/Tenants";
 import Messaging from "./pages/Messaging";
+import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/properties" element={<Properties />} />
           <Route path="/tenants" element={<Tenants />} />
           <Route path="/messaging" element={<Messaging />} />
+          <Route path="/calendar" element={<Calendar />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

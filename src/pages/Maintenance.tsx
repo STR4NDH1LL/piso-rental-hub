@@ -47,9 +47,14 @@ const Maintenance = () => {
           properties (name, address),
           profiles!maintenance_requests_tenant_id_fkey (full_name)
         `)
-        .eq(userRole === 'tenant' ? 'tenant_id' : 'landlord_id', userId);
+        .eq(userRole === 'tenant' ? 'tenant_id' : 'landlord_id', userId)
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      console.log('Fetched tickets:', data);
       setTickets(data || []);
     } catch (error) {
       console.error('Error fetching tickets:', error);
