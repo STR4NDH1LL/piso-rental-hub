@@ -10,7 +10,7 @@ const Navigation = () => {
             <img 
               src="/lovable-uploads/c58431a2-da7d-48ab-b44d-15118e4b9c7f.png" 
               alt="Piso Logo" 
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
           </div>
           
