@@ -48,93 +48,77 @@ const LandlordDashboard = () => {
   }, []);
 
   const fetchDashboardData = async () => {
-    console.log("🏠 Starting dashboard data fetch...");
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      console.log("👤 User:", user?.id);
       if (!user) {
-        console.log("❌ No user found");
+        setLoading(false);
         return;
       }
 
-      // Fetch all properties for stats
-      console.log("📊 Fetching all properties...");
-      const { data: allProperties, error: allPropertiesError } = await supabase
+      // Fetch all properties for stats - simplified query
+      const { data: allProperties, error: propertiesError } = await supabase
         .from("properties")
-        .select("*, tenancies(*)")
+        .select("*")
         .eq("landlord_id", user.id);
 
-      console.log("📊 All properties result:", allProperties, allPropertiesError);
+      if (propertiesError) {
+        console.error("Properties error:", propertiesError);
+        setLoading(false);
+        return;
+      }
 
-      // Fetch properties with active tenancies for display
-      console.log("🏡 Fetching properties with tenancies...");
-      const { data: propertiesData, error: propertiesError } = await supabase
-        .from("properties")
-        .select(`
-          *,
-          tenancies(
-            tenant_id,
-            status,
-            rent_amount,
-            profiles!tenancies_tenant_id_fkey(full_name)
-          )
-        `)
-        .eq("landlord_id", user.id);
+      // Fetch tenancies separately
+      const { data: tenancies, error: tenanciesError } = await supabase
+        .from("tenancies")
+        .select("*, profiles!tenancies_tenant_id_fkey(full_name)")
+        .eq("landlord_id", user.id)
+        .eq("status", "active");
 
-      console.log("🏡 Properties with tenancies result:", propertiesData, propertiesError);
+      if (tenanciesError) {
+        console.error("Tenancies error:", tenanciesError);
+      }
 
       // Fetch maintenance requests
-      console.log("🔧 Fetching maintenance requests...");
       const { data: maintenanceData, error: maintenanceError } = await supabase
         .from("maintenance_requests")
         .select("*")
         .eq("landlord_id", user.id)
         .eq("status", "pending");
 
-      console.log("🔧 Maintenance requests result:", maintenanceData, maintenanceError);
-
-      if (allProperties) {
-        const occupied = allProperties.filter(p => 
-          p.tenancies?.some((t: any) => t.status === "active")
-        ).length;
-        
-        const totalIncome = allProperties.reduce((sum, property) => {
-          const activeTenancy = property.tenancies?.find((t: any) => t.status === "active");
-          return sum + (activeTenancy?.rent_amount || 0);
-        }, 0);
-
-        const calculatedStats = {
-          totalProperties: allProperties.length,
-          occupiedProperties: occupied,
-          totalTenants: occupied,
-          monthlyIncome: totalIncome,
-          pendingMaintenance: maintenanceData?.length || 0,
-        };
-
-        console.log("📈 Calculated stats:", calculatedStats);
-        setStats(calculatedStats);
-
-        // Filter properties with active tenancies for display
-        const propertiesWithActiveTenancies = (propertiesData || [])
-          .filter(property => property.tenancies?.some((t: any) => t.status === "active"))
-          .slice(0, 2)
-          .map(property => ({
-            ...property,
-            tenancies: property.tenancies
-              ?.filter((t: any) => t.status === "active")
-              .map((tenancy: any) => ({
-                tenant: tenancy.profiles,
-                status: tenancy.status
-              })) || []
-          }));
-        
-        console.log("🏠 Properties for display:", propertiesWithActiveTenancies);
-        setProperties(propertiesWithActiveTenancies);
+      if (maintenanceError) {
+        console.error("Maintenance error:", maintenanceError);
       }
+
+      // Calculate stats safely
+      const totalProperties = allProperties?.length || 0;
+      const occupiedProperties = tenancies?.length || 0;
+      const totalIncome = tenancies?.reduce((sum, tenancy) => sum + (tenancy.rent_amount || 0), 0) || 0;
+
+      setStats({
+        totalProperties,
+        occupiedProperties,
+        totalTenants: occupiedProperties,
+        monthlyIncome: totalIncome,
+        pendingMaintenance: maintenanceData?.length || 0,
+      });
+
+      // Create properties for display
+      const propertiesForDisplay = (allProperties || []).slice(0, 2).map(property => {
+        const tenancy = tenancies?.find(t => t.property_id === property.id);
+        return {
+          ...property,
+          tenancies: tenancy ? [{
+            tenant: tenancy.profiles,
+            status: tenancy.status
+          }] : []
+        };
+      });
+
+      setProperties(propertiesForDisplay);
+
     } catch (error) {
-      console.error("❌ Error fetching dashboard data:", error);
+      console.error("Dashboard error:", error);
     } finally {
-      console.log("✅ Dashboard data fetch complete");
       setLoading(false);
     }
   };
