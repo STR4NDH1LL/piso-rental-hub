@@ -82,11 +82,6 @@ const Maintenance = () => {
       </div>
       
       <div className="space-y-6">
-        {/* Debug info */}
-        <div className="text-sm text-muted-foreground">
-          Debug: Profile: {profile?.role}, User ID: {profile?.user_id}, Tickets loaded: {tickets.length}
-        </div>
-        
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
