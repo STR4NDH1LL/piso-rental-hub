@@ -21,12 +21,18 @@ const Navigation = () => {
             <a href="#features" className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium">
               Features
             </a>
-            <a href="#about" className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium">
+            <button 
+              onClick={() => navigate("/about")}
+              className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
+            >
               About
-            </a>
-            <a href="#contact" className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium">
+            </button>
+            <button 
+              onClick={() => navigate("/contact")}
+              className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
+            >
               Contact
-            </a>
+            </button>
             <Button 
               variant="outline" 
               size="sm" 

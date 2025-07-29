@@ -89,16 +89,33 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">Suply</h1>
-          <p className="text-muted-foreground">Property management made simple</p>
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
+      {/* Navigation Header */}
+      <nav className="w-full p-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
+            <img 
+              src="/lovable-uploads/7412162f-de95-47ed-9113-ff969ca9a62a.png" 
+              alt="Piso Logo" 
+              className="h-16 w-auto"
+            />
+          </div>
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate("/")}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            Back to Home
+          </Button>
         </div>
+      </nav>
+      
+      <div className="flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
         
         <Card className="border-0 shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Welcome</CardTitle>
+            <CardTitle className="text-2xl text-center">Welcome to Piso</CardTitle>
             <CardDescription className="text-center">
               Sign in to your account or create a new one
             </CardDescription>
@@ -184,6 +201,7 @@ const Auth = () => {
             </Tabs>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
