@@ -1,40 +1,60 @@
+import { CreditCard, MessageCircle, Wrench, FileText, Bell } from "lucide-react";
+
 const ProcessSection = () => {
-  const steps = [
+  const features = [
     {
-      title: "Monitor",
-      description: "Our AI filters the noise - you get only critical alerts. When your property needs attention, you'll know instantly. No false alarms, no missed signals, just clarity when it matters."
+      icon: CreditCard,
+      title: "Easy & Secure Payments",
+      description: "Accept rent payments through Apple Pay, Visa, Mastercard, and Revolut with bank-level security."
     },
     {
-      title: "Predict", 
-      description: "Stop issues before they cost you. Our AI spots patterns human eyes can't see, turning potential problems into prevented losses. Perfect properties, protected profits."
+      icon: MessageCircle,
+      title: "In-App Communication", 
+      description: "Stay connected with tenants and landlords through our built-in chat system for seamless communication."
     },
     {
-      title: "Recover",
-      description: "When incidents occur, our AI streamlines the entire process - from documentation to resolution - simplifying complex claims and getting you back to business faster."
+      icon: Wrench,
+      title: "Maintenance Requests",
+      description: "Submit and track maintenance requests with photo uploads for faster resolution and better documentation."
+    },
+    {
+      icon: FileText,
+      title: "Digital Document Storage",
+      description: "Store lease agreements and important documents securely in the cloud. Go completely paperless."
+    },
+    {
+      icon: Bell,
+      title: "Smart Notifications",
+      description: "Never miss important dates with intelligent reminders for rent, inspections, lease renewals, and more."
     }
   ];
 
   return (
     <section className="py-20 bg-gray-50">
-      <div className="max-w-4xl mx-auto px-6 text-center">
-        <div className="animate-fade-in mb-16">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            Piso doesn't just monitor—it understands. Our contextual AI answers critical questions raw data can't. It anticipates risk, adapts to each property, and acts automatically—eliminating the need for constant oversight. The result: faster decisions, smarter management, and real impact.
+            Piso streamlines communication, payments, and property upkeep between landlords and tenants. Whether you're managing a single unit or multiple properties, Piso gives you the tools to simplify your rental experience—all in one place.
           </h2>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-12 mt-16">
-          {steps.map((step, index) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16">
+          {features.map((feature, index) => (
             <div 
-              key={step.title}
-              className="animate-slide-up"
-              style={{ animationDelay: `${index * 0.2}s` }}
+              key={feature.title}
+              className="bg-white p-6 rounded-xl shadow-soft hover:shadow-medium transition-all duration-300 hover-lift animate-slide-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                {step.title}
+              <div className="mb-4">
+                <div className="inline-flex p-3 rounded-lg bg-primary/10 text-primary">
+                  <feature.icon size={24} />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                {feature.title}
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                {step.description}
+                {feature.description}
               </p>
             </div>
           ))}

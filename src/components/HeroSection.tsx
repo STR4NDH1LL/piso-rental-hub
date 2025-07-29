@@ -29,7 +29,7 @@ const HeroSection = () => {
           
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto font-light">
-            AI-Powered Rental Intelligence for Modern Properties
+            Modern rental management platform for landlords and tenants — all in one place
           </p>
           
           {/* CTA Button */}
