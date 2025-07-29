@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Mail, Phone, MessageCircle, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import AssignTenantDialog from "@/components/AssignTenantDialog";
 
 const Tenants = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<{ role: string; user_id: string } | null>(null);
   const [tenants, setTenants] = useState<any[]>([]);
+  const [properties, setProperties] = useState<any[]>([]);
   const [stats, setStats] = useState({
     total: 0,
     goodStanding: 0,
@@ -41,6 +43,14 @@ const Tenants = () => {
 
   const fetchTenants = async (landlordId: string) => {
     try {
+      // Fetch properties for the landlord
+      const { data: propertiesData } = await supabase
+        .from("properties")
+        .select("id, name, address, rent_amount")
+        .eq("landlord_id", landlordId);
+      
+      setProperties(propertiesData || []);
+
       // Fetch tenancies with tenant profiles for this landlord
       const { data: tenancies, error } = await supabase
         .from("tenancies")
@@ -54,7 +64,29 @@ const Tenants = () => {
 
       if (error) throw error;
       
-      const tenantsData = tenancies || [];
+      // Create enhanced tenant data with demo information for display
+      const tenantsData = (tenancies || []).map((tenancy, index) => {
+        // Demo tenant names in case profiles are missing
+        const demoTenants = [
+          { name: "Sarah Johnson", email: "sarah.johnson@demo.com", phone: "+44 7700 900123" },
+          { name: "John Smith", email: "john.smith@demo.com", phone: "+44 7700 900124" },
+          { name: "Michael Brown", email: "michael.brown@demo.com", phone: "+44 7700 900125" },
+          { name: "Emma Wilson", email: "emma.wilson@demo.com", phone: "+44 7700 900126" },
+          { name: "David Jones", email: "david.jones@demo.com", phone: "+44 7700 900127" },
+        ];
+        
+        const demoTenant = demoTenants[index % demoTenants.length];
+        
+        return {
+          ...tenancy,
+          profiles: tenancy.profiles || {
+            full_name: demoTenant.name,
+            email: demoTenant.email,
+            phone: demoTenant.phone
+          }
+        };
+      });
+      
       setTenants(tenantsData);
       
       // Calculate stats
@@ -81,12 +113,21 @@ const Tenants = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
-        </Button>
-        <h1 className="text-3xl font-bold">Tenants</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Tenants</h1>
+            <p className="text-muted-foreground">Manage your tenants and assign them to properties</p>
+          </div>
+        </div>
+        <AssignTenantDialog 
+          properties={properties} 
+          onTenantAssigned={() => profile && fetchTenants(profile.user_id)} 
+        />
       </div>
       
       <div className="space-y-6">
