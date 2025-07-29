@@ -7,12 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Plus, Users, Eye, Edit, ArrowLeft } from "lucide-react";
 import AddPropertyDialog from "@/components/AddPropertyDialog";
 import PropertyDetailDialog from "@/components/PropertyDetailDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const Properties = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -21,9 +26,48 @@ const Properties = () => {
         navigate("/auth");
         return;
       }
+      await fetchProperties();
     };
     checkAuth();
   }, [navigate]);
+
+  const fetchProperties = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: properties, error } = await supabase
+        .from("properties")
+        .select(`
+          *,
+          tenancies (
+            id,
+            tenant_id,
+            status,
+            lease_start_date,
+            lease_end_date,
+            rent_amount,
+            profiles!tenancies_tenant_id_fkey (
+              full_name,
+              email,
+              phone
+            )
+          )
+        `)
+        .eq("landlord_id", user.id);
+
+      if (error) throw error;
+      setProperties(properties || []);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching properties",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -52,7 +96,7 @@ const Properties = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Total Properties</h3>
-                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-2xl font-bold">{properties.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -66,7 +110,9 @@ const Properties = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Occupied</h3>
-                  <p className="text-2xl font-bold">9</p>
+                  <p className="text-2xl font-bold">
+                    {properties.filter(p => p.tenancies?.some((t: any) => t.status === 'active')).length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -80,7 +126,9 @@ const Properties = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Vacant</h3>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-2xl font-bold">
+                    {properties.filter(p => !p.tenancies?.some((t: any) => t.status === 'active')).length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -94,7 +142,12 @@ const Properties = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Monthly Income</h3>
-                  <p className="text-2xl font-bold">£18,400</p>
+                  <p className="text-2xl font-bold">
+                    £{properties.reduce((total, p) => {
+                      const activeTenancy = p.tenancies?.find((t: any) => t.status === 'active');
+                      return total + (activeTenancy ? Number(activeTenancy.rent_amount) : 0);
+                    }, 0).toLocaleString()}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -108,130 +161,115 @@ const Properties = () => {
             <CardDescription>Manage your property portfolio</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Flat 2A, Victoria Street</h4>
-                    <p className="text-sm text-muted-foreground">London, SW1E 5ND • 2 bed, 1 bath</p>
-                    <p className="text-sm">Tenant: Sarah Johnson</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-semibold">£1,200/month</p>
-                    <Badge>Occupied</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedProperty({
-                          name: "Flat 2A, Victoria Street",
-                          address: "London, SW1E 5ND",
-                          rent: "£1,200/month",
-                          status: "Occupied",
-                          tenants: [
-                            {
-                              name: "Sarah Johnson",
-                              email: "sarah.johnson@email.com",
-                              phone: "+44 7700 900123",
-                              leaseStart: "Jan 2023",
-                              leaseEnd: "Jan 2025",
-                              rentStatus: "Current"
-                            }
-                          ],
-                          bedrooms: 2,
-                          bathrooms: 1,
-                          propertyType: "Flat",
-                          monthlyIncome: "£1,200",
-                          occupancyRate: "100%",
-                          lastInspection: "Dec 2023",
-                          nextInspection: "Mar 2024"
-                        });
-                        setShowDetailDialog(true);
-                      }}
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="ghost">
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
+            {loading ? (
+              <div className="text-center py-8">Loading properties...</div>
+            ) : properties.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No properties found. Add your first property to get started.
               </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">House 15, Oak Avenue</h4>
-                    <p className="text-sm text-muted-foreground">Manchester, M1 2AB • 3 bed, 2 bath</p>
-                    <p className="text-sm text-muted-foreground">Available for rent</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-semibold">£950/month</p>
-                    <Badge variant="secondary">Vacant</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-3 w-3 mr-1" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="ghost">
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
+            ) : (
+              <div className="space-y-4">
+                {properties.map((property) => {
+                  const activeTenancy = property.tenancies?.find((t: any) => t.status === 'active');
+                  const tenant = activeTenancy?.profiles;
+                  
+                  return (
+                    <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                          <Building2 className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">{property.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {property.address} • {property.bedrooms} bed, {property.bathrooms} bath
+                          </p>
+                          {tenant ? (
+                            <p className="text-sm">Tenant: {tenant.full_name}</p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Available for rent</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="font-semibold">£{property.rent_amount}/month</p>
+                          <Badge variant={activeTenancy ? "default" : "secondary"}>
+                            {activeTenancy ? "Occupied" : "Vacant"}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedProperty({
+                                id: property.id,
+                                name: property.name,
+                                address: property.address,
+                                rent: `£${property.rent_amount}/month`,
+                                status: activeTenancy ? "Occupied" : "Vacant",
+                                tenants: property.tenancies?.filter((t: any) => t.status === 'active').map((t: any) => ({
+                                  name: t.profiles?.full_name || 'Unknown',
+                                  email: t.profiles?.email || 'No email',
+                                  phone: t.profiles?.phone || 'No phone',
+                                  leaseStart: new Date(t.lease_start_date).toLocaleDateString(),
+                                  leaseEnd: new Date(t.lease_end_date).toLocaleDateString(),
+                                  rentStatus: "Current"
+                                })) || [],
+                                bedrooms: property.bedrooms,
+                                bathrooms: property.bathrooms,
+                                propertyType: property.property_type,
+                                monthlyIncome: `£${activeTenancy?.rent_amount || property.rent_amount}`,
+                                occupancyRate: activeTenancy ? "100%" : "0%",
+                                lastInspection: "Not recorded",
+                                nextInspection: "Not scheduled"
+                              });
+                              setShowDetailDialog(true);
+                            }}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            View
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedProperty(property);
+                              setShowEditDialog(true);
+                            }}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Apartment 4B, Royal Gardens</h4>
-                    <p className="text-sm text-muted-foreground">Birmingham, B1 1AA • 1 bed, 1 bath</p>
-                    <p className="text-sm">Tenant: Michael Brown</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-semibold">£800/month</p>
-                    <Badge>Occupied</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-3 w-3 mr-1" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="ghost">
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
       
-      <AddPropertyDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <AddPropertyDialog 
+        open={showAddDialog} 
+        onOpenChange={setShowAddDialog}
+        onPropertyAdded={fetchProperties}
+      />
       {selectedProperty && (
         <PropertyDetailDialog 
           open={showDetailDialog} 
           onOpenChange={setShowDetailDialog}
           property={selectedProperty}
+        />
+      )}
+      {selectedProperty && (
+        <AddPropertyDialog 
+          open={showEditDialog} 
+          onOpenChange={setShowEditDialog}
+          onPropertyAdded={fetchProperties}
+          editProperty={selectedProperty}
         />
       )}
     </div>

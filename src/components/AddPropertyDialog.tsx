@@ -10,9 +10,11 @@ import { Building2 } from "lucide-react";
 interface AddPropertyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onPropertyAdded?: () => void;
+  editProperty?: any;
 }
 
-const AddPropertyDialog = ({ open, onOpenChange }: AddPropertyDialogProps) => {
+const AddPropertyDialog = ({ open, onOpenChange, onPropertyAdded, editProperty }: AddPropertyDialogProps) => {
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -25,8 +27,9 @@ const AddPropertyDialog = ({ open, onOpenChange }: AddPropertyDialogProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual property creation
-    console.log("Adding property:", formData);
+    // TODO: Implement actual property creation/update
+    console.log(editProperty ? "Updating property:" : "Adding property:", formData);
+    onPropertyAdded?.();
     onOpenChange(false);
     // Reset form
     setFormData({
@@ -46,9 +49,11 @@ const AddPropertyDialog = ({ open, onOpenChange }: AddPropertyDialogProps) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Add New Property
+            {editProperty ? "Edit Property" : "Add New Property"}
           </DialogTitle>
-          <DialogDescription>Enter the details for your new property</DialogDescription>
+          <DialogDescription>
+            {editProperty ? "Update the property details" : "Enter the details for your new property"}
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -146,7 +151,7 @@ const AddPropertyDialog = ({ open, onOpenChange }: AddPropertyDialogProps) => {
               Cancel
             </Button>
             <Button type="submit" className="flex-1">
-              Add Property
+              {editProperty ? "Update Property" : "Add Property"}
             </Button>
           </div>
         </form>

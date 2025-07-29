@@ -9,11 +9,12 @@ import MaintenanceRequestDialog from "@/components/MaintenanceRequestDialog";
 import MaintenanceTicketChat from "@/components/MaintenanceTicketChat";
 
 const Maintenance = () => {
-  const [profile, setProfile] = useState<{ role: string } | null>(null);
+  const [profile, setProfile] = useState<{ role: string; user_id: string } | null>(null);
   const navigate = useNavigate();
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [showTicketChat, setShowTicketChat] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [tickets, setTickets] = useState<any[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -25,14 +26,35 @@ const Maintenance = () => {
 
       const { data } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, user_id")
         .eq("user_id", user.id)
         .single();
       
-      if (data) setProfile(data);
+      if (data) {
+        setProfile(data);
+        await fetchTickets(user.id, data.role);
+      }
     };
     checkAuth();
   }, [navigate]);
+
+  const fetchTickets = async (userId: string, userRole: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("maintenance_requests")
+        .select(`
+          *,
+          properties (name, address),
+          profiles!maintenance_requests_tenant_id_fkey (full_name)
+        `)
+        .eq(userRole === 'tenant' ? 'tenant_id' : 'landlord_id', userId);
+
+      if (error) throw error;
+      setTickets(data || []);
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+    }
+  };
 
   if (!profile) return <div>Loading...</div>;
 
@@ -126,106 +148,61 @@ const Maintenance = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                  <div>
-                    <p className="font-medium text-red-800 dark:text-red-200">Heating System Failure</p>
-                    <p className="text-sm text-red-600 dark:text-red-300">
-                      Victoria Street • Reported 2 days ago • High Priority
-                    </p>
+              {tickets.filter(t => t.status !== 'Completed').map((ticket) => (
+                <div key={ticket.id} className={`flex items-center justify-between p-4 border rounded-lg ${
+                  ticket.priority === 'urgent' ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20' : ''
+                }`}>
+                  <div className="flex items-center gap-3">
+                    {ticket.priority === 'urgent' ? (
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                    ) : ticket.status === 'In Progress' ? (
+                      <Wrench className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <div>
+                      <p className={`font-medium ${ticket.priority === 'urgent' ? 'text-red-800 dark:text-red-200' : ''}`}>
+                        {ticket.title}
+                      </p>
+                      <p className={`text-sm ${ticket.priority === 'urgent' ? 'text-red-600 dark:text-red-300' : 'text-muted-foreground'}`}>
+                        {ticket.properties?.name} • Reported {new Date(ticket.created_at).toLocaleDateString()} • {ticket.priority} Priority
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={
+                      ticket.priority === 'urgent' ? 'destructive' : 
+                      ticket.status === 'In Progress' ? 'default' : 'secondary'
+                    }>
+                      {ticket.status}
+                    </Badge>
+                    <Button 
+                      size="sm"
+                      variant={ticket.priority === 'urgent' ? 'default' : 'outline'}
+                      onClick={() => {
+                        setSelectedTicket({
+                          id: ticket.id,
+                          title: ticket.title,
+                          description: ticket.description,
+                          property: ticket.properties?.name || 'Unknown Property',
+                          status: ticket.status,
+                          priority: ticket.priority,
+                          reportedDate: new Date(ticket.created_at).toLocaleDateString(),
+                          tenant: ticket.profiles?.full_name || 'Unknown Tenant'
+                        });
+                        setShowTicketChat(true);
+                      }}
+                    >
+                      View Details
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="destructive">Urgent</Badge>
-                  <Button 
-                    size="sm"
-                    onClick={() => {
-                      setSelectedTicket({
-                        id: "ticket-001",
-                        title: "Heating System Failure",
-                        description: "The heating system in the property has completely stopped working. It's been cold for the past two days and we need urgent assistance.",
-                        property: "Victoria Street",
-                        status: "Urgent",
-                        priority: "Urgent",
-                        reportedDate: "2 days ago",
-                        tenant: "Sarah Johnson"
-                      });
-                      setShowTicketChat(true);
-                    }}
-                  >
-                    {profile?.role === "tenant" ? "View Details" : "View Details"}
-                  </Button>
+              ))}
+              {tickets.filter(t => t.status !== 'Completed').length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No active maintenance requests
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Wrench className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Leaky Faucet in Kitchen</p>
-                    <p className="text-sm text-muted-foreground">
-                      Victoria Street • Reported 1 week ago • Medium Priority
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge>In Progress</Badge>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedTicket({
-                        id: "ticket-002", 
-                        title: "Leaky Faucet in Kitchen",
-                        description: "Kitchen faucet is dripping constantly, needs repair.",
-                        property: "Victoria Street",
-                        status: "In Progress", 
-                        priority: "Medium",
-                        reportedDate: "1 week ago",
-                        tenant: "Sarah Johnson"
-                      });
-                      setShowTicketChat(true);
-                    }}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Window Lock Repair</p>
-                    <p className="text-sm text-muted-foreground">
-                      Oak Avenue • Reported 3 days ago • Low Priority
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">Pending</Badge>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedTicket({
-                        id: "ticket-003",
-                        title: "Window Lock Repair", 
-                        description: "Window lock mechanism is broken and needs replacement.",
-                        property: "Oak Avenue",
-                        status: "Pending",
-                        priority: "Low", 
-                        reportedDate: "3 days ago",
-                        tenant: "Michael Brown"
-                      });
-                      setShowTicketChat(true);
-                    }}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -238,45 +215,60 @@ const Maintenance = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <div>
-                    <p className="font-medium">Dishwasher Repair</p>
-                    <p className="text-sm text-muted-foreground">
-                      Victoria Street • Completed 1 week ago
-                    </p>
+              {tickets.filter(t => t.status === 'Completed').map((ticket) => (
+                <div key={ticket.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <div>
+                      <p className="font-medium">{ticket.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {ticket.properties?.name} • Completed {new Date(ticket.updated_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">Completed</Badge>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedTicket({
+                          id: ticket.id,
+                          title: ticket.title,
+                          description: ticket.description,
+                          property: ticket.properties?.name || 'Unknown Property',
+                          status: ticket.status,
+                          priority: ticket.priority,
+                          reportedDate: new Date(ticket.created_at).toLocaleDateString(),
+                          tenant: ticket.profiles?.full_name || 'Unknown Tenant'
+                        });
+                        setShowTicketChat(true);
+                      }}
+                    >
+                      View Report
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Completed</Badge>
-                  <Button 
-                    size="sm" 
-                    variant="ghost"
-                    onClick={() => {
-                      setSelectedTicket({
-                        id: "ticket-004",
-                        title: "Dishwasher Repair",
-                        description: "Dishwasher was not draining properly, has been fixed.",
-                        property: "Victoria Street", 
-                        status: "Completed",
-                        priority: "Medium",
-                        reportedDate: "1 week ago",
-                        tenant: "Sarah Johnson"
-                      });
-                      setShowTicketChat(true);
-                    }}
-                  >
-                    View Report
-                  </Button>
+              ))}
+              {tickets.filter(t => t.status === 'Completed').length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No completed maintenance requests
                 </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
       
-      <MaintenanceRequestDialog open={showRequestDialog} onOpenChange={setShowRequestDialog} />
+      <MaintenanceRequestDialog 
+        open={showRequestDialog} 
+        onOpenChange={setShowRequestDialog}
+        onRequestCreated={async () => {
+          if (profile?.user_id && profile?.role) {
+            await fetchTickets(profile.user_id, profile.role);
+          }
+        }}
+      />
       {selectedTicket && (
         <MaintenanceTicketChat 
           open={showTicketChat} 

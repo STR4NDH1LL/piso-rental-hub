@@ -12,9 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 interface MaintenanceRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onRequestCreated?: () => void;
 }
 
-const MaintenanceRequestDialog = ({ open, onOpenChange }: MaintenanceRequestDialogProps) => {
+const MaintenanceRequestDialog = ({ open, onOpenChange, onRequestCreated }: MaintenanceRequestDialogProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     title: "",
@@ -89,6 +90,7 @@ const MaintenanceRequestDialog = ({ open, onOpenChange }: MaintenanceRequestDial
         description: "Your maintenance request has been submitted successfully"
       });
 
+      onRequestCreated?.();
       onOpenChange(false);
       
       // Reset form
