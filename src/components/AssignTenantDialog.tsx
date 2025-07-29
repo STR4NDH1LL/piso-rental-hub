@@ -50,6 +50,16 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.tenantName || !formData.tenantEmail || !formData.propertyId || !formData.leaseStartDate || !formData.leaseEndDate) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -60,6 +70,7 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
           description: "You must be logged in to assign tenants",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
@@ -70,18 +81,18 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
           description: "Please select a property",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
-      // Generate a demo tenant ID (these won't be real auth users)
-      const demoTenantId = `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Generate a unique demo tenant ID
+      const demoTenantId = `tenant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      // Create a demo profile entry (without auth user constraint)
-      // We'll store this as a "virtual" tenant for demo purposes
+      // Create the tenancy record
       const { error: tenancyError } = await supabase
         .from("tenancies")
         .insert({
-          tenant_id: demoTenantId, // Use demo ID
+          tenant_id: demoTenantId,
           property_id: formData.propertyId,
           landlord_id: user.id,
           rent_amount: parseFloat(formData.rentAmount || selectedProperty.rent_amount.toString()),
@@ -94,21 +105,13 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
       if (tenancyError) {
         console.error("Tenancy error:", tenancyError);
         toast({
-          title: "Error",
-          description: "Failed to assign tenant to property",
+          title: "Database Error",
+          description: `Failed to create tenancy: ${tenancyError.message}`,
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
-
-      // Store tenant info in a metadata table for demo purposes
-      await supabase
-        .from("tenancies")
-        .update({
-          // We'll use a simple approach and store tenant info in a JSON field if available
-          // For now, we'll just create the tenancy record
-        })
-        .eq("tenant_id", demoTenantId);
 
       toast({
         title: "Success",
@@ -128,11 +131,12 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
 
       setOpen(false);
       onTenantAssigned();
+      
     } catch (error) {
       console.error("Error assigning tenant:", error);
       toast({
         title: "Error",
-        description: "Failed to assign tenant",
+        description: `Failed to assign tenant: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
