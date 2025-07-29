@@ -48,37 +48,50 @@ const LandlordDashboard = () => {
   }, []);
 
   const fetchDashboardData = async () => {
+    console.log("🏠 Starting dashboard data fetch...");
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      console.log("👤 User:", user?.id);
+      if (!user) {
+        console.log("❌ No user found");
+        return;
+      }
 
-      // Fetch properties with tenancies
-      const { data: propertiesData } = await supabase
+      // Fetch all properties for stats
+      console.log("📊 Fetching all properties...");
+      const { data: allProperties, error: allPropertiesError } = await supabase
+        .from("properties")
+        .select("*, tenancies(*)")
+        .eq("landlord_id", user.id);
+
+      console.log("📊 All properties result:", allProperties, allPropertiesError);
+
+      // Fetch properties with active tenancies for display
+      console.log("🏡 Fetching properties with tenancies...");
+      const { data: propertiesData, error: propertiesError } = await supabase
         .from("properties")
         .select(`
           *,
-          tenancies!inner(
+          tenancies(
             tenant_id,
             status,
             rent_amount,
             profiles!tenancies_tenant_id_fkey(full_name)
           )
         `)
-        .eq("landlord_id", user.id)
-        .eq("tenancies.status", "active");
-
-      // Fetch all properties for stats
-      const { data: allProperties } = await supabase
-        .from("properties")
-        .select("*, tenancies(*)")
         .eq("landlord_id", user.id);
 
+      console.log("🏡 Properties with tenancies result:", propertiesData, propertiesError);
+
       // Fetch maintenance requests
-      const { data: maintenanceData } = await supabase
+      console.log("🔧 Fetching maintenance requests...");
+      const { data: maintenanceData, error: maintenanceError } = await supabase
         .from("maintenance_requests")
         .select("*")
         .eq("landlord_id", user.id)
         .eq("status", "pending");
+
+      console.log("🔧 Maintenance requests result:", maintenanceData, maintenanceError);
 
       if (allProperties) {
         const occupied = allProperties.filter(p => 
@@ -90,28 +103,38 @@ const LandlordDashboard = () => {
           return sum + (activeTenancy?.rent_amount || 0);
         }, 0);
 
-        setStats({
+        const calculatedStats = {
           totalProperties: allProperties.length,
           occupiedProperties: occupied,
           totalTenants: occupied,
           monthlyIncome: totalIncome,
           pendingMaintenance: maintenanceData?.length || 0,
-        });
+        };
 
-        // Set properties for display (limit to recent 2)
-        const recentProperties = (propertiesData || []).slice(0, 2).map(property => ({
-          ...property,
-          tenancies: property.tenancies.map((tenancy: any) => ({
-            tenant: tenancy.profiles,
-            status: tenancy.status
-          }))
-        }));
+        console.log("📈 Calculated stats:", calculatedStats);
+        setStats(calculatedStats);
+
+        // Filter properties with active tenancies for display
+        const propertiesWithActiveTenancies = (propertiesData || [])
+          .filter(property => property.tenancies?.some((t: any) => t.status === "active"))
+          .slice(0, 2)
+          .map(property => ({
+            ...property,
+            tenancies: property.tenancies
+              ?.filter((t: any) => t.status === "active")
+              .map((tenancy: any) => ({
+                tenant: tenancy.profiles,
+                status: tenancy.status
+              })) || []
+          }));
         
-        setProperties(recentProperties);
+        console.log("🏠 Properties for display:", propertiesWithActiveTenancies);
+        setProperties(propertiesWithActiveTenancies);
       }
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      console.error("❌ Error fetching dashboard data:", error);
     } finally {
+      console.log("✅ Dashboard data fetch complete");
       setLoading(false);
     }
   };
