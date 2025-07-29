@@ -5,9 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Plus, Users, Eye, Edit, ArrowLeft } from "lucide-react";
+import AddPropertyDialog from "@/components/AddPropertyDialog";
+import PropertyDetailDialog from "@/components/PropertyDetailDialog";
 
 const Properties = () => {
   const navigate = useNavigate();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -30,7 +35,7 @@ const Properties = () => {
           </Button>
           <h1 className="text-3xl font-bold">Properties</h1>
         </div>
-        <Button>
+        <Button onClick={() => setShowAddDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Property
         </Button>
@@ -121,7 +126,22 @@ const Properties = () => {
                     <Badge>Occupied</Badge>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedProperty({
+                          name: "Flat 2A, Victoria Street",
+                          address: "London, SW1E 5ND",
+                          rent: "£1,200/month",
+                          status: "Occupied",
+                          tenant: "Sarah Johnson",
+                          bedrooms: 2,
+                          bathrooms: 1
+                        });
+                        setShowDetailDialog(true);
+                      }}
+                    >
                       <Eye className="h-3 w-3 mr-1" />
                       View
                     </Button>
@@ -191,6 +211,15 @@ const Properties = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <AddPropertyDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      {selectedProperty && (
+        <PropertyDetailDialog 
+          open={showDetailDialog} 
+          onOpenChange={setShowDetailDialog}
+          property={selectedProperty}
+        />
+      )}
     </div>
   );
 };

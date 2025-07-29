@@ -5,10 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wrench, Plus, Clock, AlertTriangle, CheckCircle, ArrowLeft } from "lucide-react";
+import MaintenanceRequestDialog from "@/components/MaintenanceRequestDialog";
+import MaintenanceDetailDialog from "@/components/MaintenanceDetailDialog";
 
 const Maintenance = () => {
   const [profile, setProfile] = useState<{ role: string } | null>(null);
   const navigate = useNavigate();
+  const [showRequestDialog, setShowRequestDialog] = useState(false);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,7 +47,7 @@ const Maintenance = () => {
           <h1 className="text-3xl font-bold">Maintenance Requests</h1>
         </div>
         {profile.role === "tenant" && (
-          <Button>
+          <Button onClick={() => setShowRequestDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
             New Request
           </Button>
@@ -133,8 +138,22 @@ const Maintenance = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="destructive">Urgent</Badge>
-                  <Button size="sm">
-                    {profile.role === "tenant" ? "View Status" : "Assign Contractor"}
+                  <Button 
+                    size="sm"
+                    onClick={() => {
+                      setSelectedRequest({
+                        title: "Heating System Failure",
+                        description: "The heating system in the property has completely stopped working. It's been cold for the past two days and we need urgent assistance.",
+                        property: "Victoria Street",
+                        status: "Urgent",
+                        priority: "High",
+                        reportedDate: "2 days ago",
+                        tenant: "Sarah Johnson"
+                      });
+                      setShowDetailDialog(true);
+                    }}
+                  >
+                    {profile?.role === "tenant" ? "View Status" : "Assign Contractor"}
                   </Button>
                 </div>
               </div>
@@ -201,6 +220,15 @@ const Maintenance = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <MaintenanceRequestDialog open={showRequestDialog} onOpenChange={setShowRequestDialog} />
+      {selectedRequest && (
+        <MaintenanceDetailDialog 
+          open={showDetailDialog} 
+          onOpenChange={setShowDetailDialog}
+          request={selectedRequest}
+        />
+      )}
     </div>
   );
 };
