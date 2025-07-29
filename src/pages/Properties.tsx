@@ -135,9 +135,23 @@ const Properties = () => {
                           address: "London, SW1E 5ND",
                           rent: "£1,200/month",
                           status: "Occupied",
-                          tenant: "Sarah Johnson",
+                          tenants: [
+                            {
+                              name: "Sarah Johnson",
+                              email: "sarah.johnson@email.com",
+                              phone: "+44 7700 900123",
+                              leaseStart: "Jan 2023",
+                              leaseEnd: "Jan 2025",
+                              rentStatus: "Current"
+                            }
+                          ],
                           bedrooms: 2,
-                          bathrooms: 1
+                          bathrooms: 1,
+                          propertyType: "Flat",
+                          monthlyIncome: "£1,200",
+                          occupancyRate: "100%",
+                          lastInspection: "Dec 2023",
+                          nextInspection: "Mar 2024"
                         });
                         setShowDetailDialog(true);
                       }}

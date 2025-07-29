@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wrench, Plus, Clock, AlertTriangle, CheckCircle, ArrowLeft } from "lucide-react";
 import MaintenanceRequestDialog from "@/components/MaintenanceRequestDialog";
-import MaintenanceDetailDialog from "@/components/MaintenanceDetailDialog";
+import MaintenanceTicketChat from "@/components/MaintenanceTicketChat";
 
 const Maintenance = () => {
   const [profile, setProfile] = useState<{ role: string } | null>(null);
   const navigate = useNavigate();
   const [showRequestDialog, setShowRequestDialog] = useState(false);
-  const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [showTicketChat, setShowTicketChat] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -141,19 +141,20 @@ const Maintenance = () => {
                   <Button 
                     size="sm"
                     onClick={() => {
-                      setSelectedRequest({
+                      setSelectedTicket({
+                        id: "ticket-001",
                         title: "Heating System Failure",
                         description: "The heating system in the property has completely stopped working. It's been cold for the past two days and we need urgent assistance.",
                         property: "Victoria Street",
                         status: "Urgent",
-                        priority: "High",
+                        priority: "Urgent",
                         reportedDate: "2 days ago",
                         tenant: "Sarah Johnson"
                       });
-                      setShowDetailDialog(true);
+                      setShowTicketChat(true);
                     }}
                   >
-                    {profile?.role === "tenant" ? "View Status" : "Assign Contractor"}
+                    {profile?.role === "tenant" ? "View Details" : "View Details"}
                   </Button>
                 </div>
               </div>
@@ -170,7 +171,25 @@ const Maintenance = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge>In Progress</Badge>
-                  <Button size="sm" variant="outline">View Details</Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedTicket({
+                        id: "ticket-002", 
+                        title: "Leaky Faucet in Kitchen",
+                        description: "Kitchen faucet is dripping constantly, needs repair.",
+                        property: "Victoria Street",
+                        status: "In Progress", 
+                        priority: "Medium",
+                        reportedDate: "1 week ago",
+                        tenant: "Sarah Johnson"
+                      });
+                      setShowTicketChat(true);
+                    }}
+                  >
+                    View Details
+                  </Button>
                 </div>
               </div>
 
@@ -186,7 +205,25 @@ const Maintenance = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">Pending</Badge>
-                  <Button size="sm" variant="outline">View Details</Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedTicket({
+                        id: "ticket-003",
+                        title: "Window Lock Repair", 
+                        description: "Window lock mechanism is broken and needs replacement.",
+                        property: "Oak Avenue",
+                        status: "Pending",
+                        priority: "Low", 
+                        reportedDate: "3 days ago",
+                        tenant: "Michael Brown"
+                      });
+                      setShowTicketChat(true);
+                    }}
+                  >
+                    View Details
+                  </Button>
                 </div>
               </div>
             </div>
@@ -213,7 +250,25 @@ const Maintenance = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">Completed</Badge>
-                  <Button size="sm" variant="ghost">View Report</Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedTicket({
+                        id: "ticket-004",
+                        title: "Dishwasher Repair",
+                        description: "Dishwasher was not draining properly, has been fixed.",
+                        property: "Victoria Street", 
+                        status: "Completed",
+                        priority: "Medium",
+                        reportedDate: "1 week ago",
+                        tenant: "Sarah Johnson"
+                      });
+                      setShowTicketChat(true);
+                    }}
+                  >
+                    View Report
+                  </Button>
                 </div>
               </div>
             </div>
@@ -222,11 +277,11 @@ const Maintenance = () => {
       </div>
       
       <MaintenanceRequestDialog open={showRequestDialog} onOpenChange={setShowRequestDialog} />
-      {selectedRequest && (
-        <MaintenanceDetailDialog 
-          open={showDetailDialog} 
-          onOpenChange={setShowDetailDialog}
-          request={selectedRequest}
+      {selectedTicket && (
+        <MaintenanceTicketChat 
+          open={showTicketChat} 
+          onOpenChange={setShowTicketChat}
+          ticket={selectedTicket}
         />
       )}
     </div>
