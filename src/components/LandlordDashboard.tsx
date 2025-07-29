@@ -102,13 +102,15 @@ const LandlordDashboard = () => {
         pendingMaintenance: maintenanceData?.length || 0,
       });
 
-      // Create properties for display
+      // Create properties for display with proper null checking
       const propertiesForDisplay = (allProperties || []).slice(0, 2).map(property => {
         const tenancy = tenancies?.find(t => t.property_id === property.id);
         return {
           ...property,
-          tenancies: tenancy ? [{
-            tenant: tenancy.profiles,
+          tenancies: tenancy && tenancy.profiles ? [{
+            tenant: {
+              full_name: tenancy.profiles.full_name || 'Unknown Tenant'
+            },
             status: tenancy.status
           }] : []
         };
