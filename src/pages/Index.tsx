@@ -1,14 +1,18 @@
+import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
-import FeaturesSection from "@/components/FeaturesSection";
-import ValueProposition from "@/components/ValueProposition";
+import ProductShowcase from "@/components/ProductShowcase";
+import ProcessSection from "@/components/FeaturesSection";
+import UseCasesSection from "@/components/ValueProposition";
 import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <HeroSection />
-      <FeaturesSection />
-      <ValueProposition />
+      <ProductShowcase />
+      <ProcessSection />
+      <UseCasesSection />
       <Footer />
     </div>
   );

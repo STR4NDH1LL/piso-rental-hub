@@ -1,77 +1,40 @@
-import { CreditCard, MessageCircle, Wrench, FileText, Bell, Shield } from "lucide-react";
+const ProcessSection = () => {
+  const steps = [
+    {
+      title: "Monitor",
+      description: "Our AI filters the noise - you get only critical alerts. When your property needs attention, you'll know instantly. No false alarms, no missed signals, just clarity when it matters."
+    },
+    {
+      title: "Predict", 
+      description: "Stop issues before they cost you. Our AI spots patterns human eyes can't see, turning potential problems into prevented losses. Perfect properties, protected profits."
+    },
+    {
+      title: "Recover",
+      description: "When incidents occur, our AI streamlines the entire process - from documentation to resolution - simplifying complex claims and getting you back to business faster."
+    }
+  ];
 
-const features = [
-  {
-    icon: CreditCard,
-    title: "Easy & Secure Payments",
-    description: "Accept rent payments through Apple Pay, Visa, Mastercard, and Revolut with bank-level security.",
-    color: "text-green-600"
-  },
-  {
-    icon: MessageCircle,
-    title: "In-App Communication",
-    description: "Stay connected with tenants and landlords through our built-in chat system.",
-    color: "text-blue-600"
-  },
-  {
-    icon: Wrench,
-    title: "Maintenance Requests",
-    description: "Submit and track maintenance requests with photo uploads for faster resolution.",
-    color: "text-orange-600"
-  },
-  {
-    icon: FileText,
-    title: "Digital Document Storage",
-    description: "Store lease agreements and important documents securely in the cloud. Go paperless.",
-    color: "text-purple-600"
-  },
-  {
-    icon: Bell,
-    title: "Smart Notifications",
-    description: "Never miss important dates with intelligent reminders for rent, inspections, and renewals.",
-    color: "text-red-600"
-  },
-  {
-    icon: Shield,
-    title: "Secure & Compliant",
-    description: "Your data is protected with enterprise-grade security and full compliance standards.",
-    color: "text-indigo-600"
-  }
-];
-
-const FeaturesSection = () => {
   return (
-    <section className="section-padding bg-background">
-      <div className="max-w-6xl mx-auto container-padding">
-        <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-h2 mb-4">
-            Everything you need for{" "}
-            <span className="bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent">
-              modern rental management
-            </span>
+    <section className="py-20 bg-gray-50">
+      <div className="max-w-4xl mx-auto px-6 text-center">
+        <div className="animate-fade-in mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+            Piso doesn't just monitor—it understands. Our contextual AI answers critical questions raw data can't. It anticipates risk, adapts to each property, and acts automatically—eliminating the need for constant oversight. The result: faster decisions, smarter management, and real impact.
           </h2>
-          <p className="text-large text-muted-foreground max-w-2xl mx-auto">
-            Streamline your rental experience with our comprehensive suite of tools designed for both landlords and tenants.
-          </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
+        <div className="grid md:grid-cols-3 gap-12 mt-16">
+          {steps.map((step, index) => (
             <div 
-              key={feature.title}
-              className="group bg-gradient-card p-6 rounded-xl shadow-soft hover:shadow-medium transition-all duration-300 hover-lift animate-slide-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              key={step.title}
+              className="animate-slide-up"
+              style={{ animationDelay: `${index * 0.2}s` }}
             >
-              <div className="mb-4">
-                <div className={`inline-flex p-3 rounded-lg bg-muted ${feature.color}`}>
-                  <feature.icon size={24} />
-                </div>
-              </div>
-              <h3 className="text-h3 mb-3 group-hover:text-primary transition-colors">
-                {feature.title}
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                {step.title}
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {feature.description}
+              <p className="text-gray-600 leading-relaxed">
+                {step.description}
               </p>
             </div>
           ))}
@@ -81,4 +44,4 @@ const FeaturesSection = () => {
   );
 };
 
-export default FeaturesSection;
+export default ProcessSection;

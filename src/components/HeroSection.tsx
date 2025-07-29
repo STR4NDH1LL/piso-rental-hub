@@ -1,46 +1,45 @@
 import { Button } from "@/components/ui/button";
+import heroBackground from "@/assets/hero-background.jpg";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-subtle overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: `url(${heroBackground})`,
+          filter: 'blur(1px)'
+        }}
+      />
+      <div className="absolute inset-0 bg-black/50" />
       
-      <div className="relative z-10 max-w-6xl mx-auto container-padding text-center">
+      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
         <div className="animate-fade-in">
-          {/* Logo */}
-          <div className="mb-8 flex justify-center">
-            <img 
-              src="/lovable-uploads/db6ee567-84e4-4336-b96a-95855d76ff0f.png" 
-              alt="Piso Logo" 
-              className="h-16 w-auto"
-            />
-          </div>
+          {/* Trust indicator */}
+          <p className="text-sm md:text-base text-white/80 mb-8 font-medium tracking-wide">
+            Trusted by property managers and tenants worldwide
+          </p>
           
           {/* Main headline */}
-          <h1 className="text-hero mb-6 max-w-4xl mx-auto leading-tight">
-            Simplify Your{" "}
-            <span className="bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent">
-              Rental Experience
-            </span>{" "}
-            with Piso
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+            Built for the future of{" "}
+            <span className="text-white">rental management.</span>
           </h1>
           
           {/* Subheadline */}
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            Modern rental management for landlords and tenants — all in one place.
+          <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto font-light">
+            AI-Powered Rental Intelligence for Modern Properties
           </p>
           
           {/* CTA Button */}
           <div className="animate-scale-in" style={{ animationDelay: "0.2s" }}>
-            <Button variant="hero" size="hero" className="mb-4">
+            <Button 
+              size="lg" 
+              className="bg-white text-black hover:bg-white/90 text-lg px-12 py-6 rounded-xl font-semibold shadow-2xl"
+            >
               Join the Waitlist
             </Button>
-            <p className="text-sm text-muted-foreground">
-              Be the first to experience effortless rental management
-            </p>
           </div>
         </div>
       </div>
