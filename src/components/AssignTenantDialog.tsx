@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Search } from "lucide-react";
 
 interface Property {
   id: string;
@@ -23,10 +23,10 @@ interface AssignTenantDialogProps {
 const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [availableTenants, setAvailableTenants] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTenantId, setSelectedTenantId] = useState("");
   const [formData, setFormData] = useState({
-    tenantName: "",
-    tenantEmail: "",
-    tenantPhone: "",
     propertyId: "",
     rentAmount: "",
     leaseStartDate: "",
@@ -34,27 +34,54 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
   });
   const { toast } = useToast();
 
-  // Demo tenant suggestions
-  const demoTenants = [
-    { name: "Sarah Johnson", email: "sarah.johnson@demo.com", phone: "+44 7700 900123" },
-    { name: "John Smith", email: "john.smith@demo.com", phone: "+44 7700 900124" },
-    { name: "Michael Brown", email: "michael.brown@demo.com", phone: "+44 7700 900125" },
-    { name: "Emma Wilson", email: "emma.wilson@demo.com", phone: "+44 7700 900126" },
-    { name: "David Jones", email: "david.jones@demo.com", phone: "+44 7700 900127" },
-    { name: "Lisa Davis", email: "lisa.davis@demo.com", phone: "+44 7700 900128" },
-    { name: "James Miller", email: "james.miller@demo.com", phone: "+44 7700 900129" },
-    { name: "Sophie Taylor", email: "sophie.taylor@demo.com", phone: "+44 7700 900130" },
-    { name: "Alex Anderson", email: "alex.anderson@demo.com", phone: "+44 7700 900131" },
-    { name: "Rachel White", email: "rachel.white@demo.com", phone: "+44 7700 900132" },
-  ];
+  useEffect(() => {
+    if (open) {
+      fetchAvailableTenants();
+    }
+  }, [open]);
+
+  const fetchAvailableTenants = async () => {
+    try {
+      // Get all tenant profiles that are not currently assigned to active tenancies
+      const { data: tenants, error } = await supabase
+        .from("profiles")
+        .select(`
+          user_id,
+          full_name,
+          email,
+          phone,
+          tenancies!tenancies_tenant_id_fkey(status)
+        `)
+        .eq("role", "tenant");
+
+      if (error) {
+        console.error("Error fetching tenants:", error);
+        return;
+      }
+
+      // Filter out tenants who already have active tenancies
+      const availableTenants = tenants?.filter(tenant => 
+        !tenant.tenancies?.some(tenancy => tenancy.status === 'active')
+      ) || [];
+
+      setAvailableTenants(availableTenants);
+    } catch (error) {
+      console.error("Error fetching available tenants:", error);
+    }
+  };
+
+  const filteredTenants = availableTenants.filter(tenant =>
+    tenant.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.tenantName || !formData.tenantEmail || !formData.propertyId || !formData.leaseStartDate || !formData.leaseEndDate) {
+    if (!selectedTenantId || !formData.propertyId || !formData.leaseStartDate || !formData.leaseEndDate) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required fields",
+        description: "Please select a tenant, property, and provide lease dates",
         variant: "destructive",
       });
       return;
@@ -75,24 +102,23 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
       }
 
       const selectedProperty = properties.find(p => p.id === formData.propertyId);
-      if (!selectedProperty) {
+      const selectedTenant = availableTenants.find(t => t.user_id === selectedTenantId);
+      
+      if (!selectedProperty || !selectedTenant) {
         toast({
           title: "Error",
-          description: "Please select a property",
+          description: "Please select a valid tenant and property",
           variant: "destructive",
         });
         setLoading(false);
         return;
       }
 
-      // Generate a unique demo tenant ID
-      const demoTenantId = `tenant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
       // Create the tenancy record
       const { error: tenancyError } = await supabase
         .from("tenancies")
         .insert({
-          tenant_id: demoTenantId,
+          tenant_id: selectedTenantId,
           property_id: formData.propertyId,
           landlord_id: user.id,
           rent_amount: parseFloat(formData.rentAmount || selectedProperty.rent_amount.toString()),
@@ -115,19 +141,18 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
 
       toast({
         title: "Success",
-        description: `${formData.tenantName} has been assigned to ${selectedProperty.name}`,
+        description: `${selectedTenant.full_name} has been assigned to ${selectedProperty.name}`,
       });
 
       // Reset form
       setFormData({
-        tenantName: "",
-        tenantEmail: "",
-        tenantPhone: "",
         propertyId: "",
         rentAmount: "",
         leaseStartDate: "",
         leaseEndDate: "",
       });
+      setSelectedTenantId("");
+      setSearchTerm("");
 
       setOpen(false);
       onTenantAssigned();
@@ -142,15 +167,6 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemoTenant = (tenant: typeof demoTenants[0]) => {
-    setFormData(prev => ({
-      ...prev,
-      tenantName: tenant.name,
-      tenantEmail: tenant.email,
-      tenantPhone: tenant.phone,
-    }));
   };
 
   const selectedProperty = properties.find(p => p.id === formData.propertyId);
@@ -172,58 +188,55 @@ const AssignTenantDialog = ({ properties, onTenantAssigned }: AssignTenantDialog
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Quick Demo Tenant Selection */}
+          {/* Tenant Search and Selection */}
           <div>
-            <Label>Quick Fill Demo Tenant</Label>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {demoTenants.slice(0, 6).map((tenant, index) => (
-                <Button
-                  key={index}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fillDemoTenant(tenant)}
-                  className="text-left justify-start"
-                >
-                  {tenant.name}
-                </Button>
-              ))}
+            <Label>Search and Select Tenant</Label>
+            <div className="space-y-2 mt-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tenants by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+              
+              {searchTerm && (
+                <div className="max-h-40 overflow-y-auto border rounded-lg">
+                  {filteredTenants.length > 0 ? (
+                    filteredTenants.map((tenant) => (
+                      <div
+                        key={tenant.user_id}
+                        className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-muted ${
+                          selectedTenantId === tenant.user_id ? 'bg-muted' : ''
+                        }`}
+                        onClick={() => {
+                          setSelectedTenantId(tenant.user_id);
+                          setSearchTerm(tenant.full_name || '');
+                        }}
+                      >
+                        <div className="font-medium">{tenant.full_name}</div>
+                        <div className="text-sm text-muted-foreground">{tenant.email}</div>
+                        {tenant.phone && (
+                          <div className="text-sm text-muted-foreground">{tenant.phone}</div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-3 text-center text-muted-foreground">
+                      No available tenants found
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {!searchTerm && availableTenants.length === 0 && (
+                <div className="text-sm text-muted-foreground">
+                  No available tenants found. All tenants may already be assigned to properties.
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Tenant Information */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="tenantName">Tenant Name</Label>
-              <Input
-                id="tenantName"
-                value={formData.tenantName}
-                onChange={(e) => setFormData(prev => ({ ...prev, tenantName: e.target.value }))}
-                placeholder="Enter tenant name"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="tenantEmail">Email</Label>
-              <Input
-                id="tenantEmail"
-                type="email"
-                value={formData.tenantEmail}
-                onChange={(e) => setFormData(prev => ({ ...prev, tenantEmail: e.target.value }))}
-                placeholder="tenant@example.com"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="tenantPhone">Phone Number</Label>
-            <Input
-              id="tenantPhone"
-              value={formData.tenantPhone}
-              onChange={(e) => setFormData(prev => ({ ...prev, tenantPhone: e.target.value }))}
-              placeholder="+44 7700 900000"
-            />
           </div>
 
           {/* Property Selection */}

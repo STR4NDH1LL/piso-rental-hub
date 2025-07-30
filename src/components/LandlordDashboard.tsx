@@ -43,6 +43,7 @@ const LandlordDashboard = () => {
   });
   const [properties, setProperties] = useState<Property[]>([]);
   const [allProperties, setAllProperties] = useState<any[]>([]);
+  const [urgentActions, setUrgentActions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -83,12 +84,24 @@ const LandlordDashboard = () => {
       // Fetch maintenance requests
       const { data: maintenanceData, error: maintenanceError } = await supabase
         .from("maintenance_requests")
-        .select("*")
+        .select("*, properties(name, address)")
         .eq("landlord_id", user.id)
         .eq("status", "pending");
 
       if (maintenanceError) {
         console.error("Maintenance error:", maintenanceError);
+      }
+
+      // Fetch overdue rent tenancies
+      const { data: overdueRent, error: overdueError } = await supabase
+        .from("tenancies")
+        .select("*, profiles!tenancies_tenant_id_fkey(full_name), properties(name)")
+        .eq("landlord_id", user.id)
+        .eq("status", "active")
+        .lt("rent_due_date", new Date().toISOString());
+
+      if (overdueError) {
+        console.error("Overdue rent error:", overdueError);
       }
 
       // Calculate stats safely
@@ -103,6 +116,48 @@ const LandlordDashboard = () => {
         monthlyIncome: totalIncome,
         pendingMaintenance: maintenanceData?.length || 0,
       });
+
+      // Set urgent actions
+      const actions = [];
+      
+      // Add overdue rent actions
+      if (overdueRent?.length) {
+        overdueRent.forEach(tenancy => {
+          if (tenancy.profiles && tenancy.properties) {
+            const daysDiff = Math.floor((new Date().getTime() - new Date(tenancy.rent_due_date).getTime()) / (1000 * 3600 * 24));
+            actions.push({
+              type: 'overdue_rent',
+              title: 'Overdue Rent',
+              description: `${tenancy.profiles.full_name} - £${tenancy.rent_amount} (${daysDiff} days overdue)`,
+              action: 'Contact',
+              tenantId: tenancy.tenant_id,
+              tenantName: tenancy.profiles.full_name,
+              amount: tenancy.rent_amount,
+              daysDiff,
+              propertyName: tenancy.properties.name
+            });
+          }
+        });
+      }
+
+      // Add urgent maintenance actions
+      if (maintenanceData?.length) {
+        maintenanceData.filter(req => req.priority === 'urgent').forEach(request => {
+          if (request.properties) {
+            actions.push({
+              type: 'urgent_maintenance',
+              title: 'Urgent Maintenance',
+              description: `${request.title} at ${request.properties.name}`,
+              action: 'View',
+              maintenanceId: request.id,
+              requestTitle: request.title,
+              propertyName: request.properties.name
+            });
+          }
+        });
+      }
+
+      setUrgentActions(actions);
 
       // Create properties for display with proper null checking
       const propertiesForDisplay = (allProperties || []).slice(0, 2).map(property => {
@@ -137,6 +192,16 @@ const LandlordDashboard = () => {
       console.error("Dashboard error:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUrgentAction = (action: any) => {
+    if (action.type === 'overdue_rent') {
+      // Navigate to tenants page and show contact info
+      navigate('/tenants', { state: { highlightTenant: action.tenantId, showBalance: true } });
+    } else if (action.type === 'urgent_maintenance') {
+      // Navigate to maintenance page and open the specific ticket
+      navigate('/maintenance', { state: { openTicket: action.maintenanceId } });
     }
   };
 
@@ -230,23 +295,48 @@ const LandlordDashboard = () => {
             <CardDescription>Items requiring immediate attention</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20">
-                <div>
-                  <p className="font-medium text-red-800 dark:text-red-200">Overdue Rent</p>
-                  <p className="text-sm text-red-600 dark:text-red-300">John Smith - £1,200 (3 days overdue)</p>
-                </div>
-                <Button size="sm" variant="destructive">Contact</Button>
+            {urgentActions.length > 0 ? (
+              <div className="space-y-4">
+                {urgentActions.map((action, index) => (
+                  <div 
+                    key={index}
+                    className={`flex items-center justify-between p-3 border rounded-lg ${
+                      action.type === 'overdue_rent' 
+                        ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
+                        : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20'
+                    }`}
+                  >
+                    <div>
+                      <p className={`font-medium ${
+                        action.type === 'overdue_rent' 
+                          ? 'text-red-800 dark:text-red-200'
+                          : 'text-amber-800 dark:text-amber-200'
+                      }`}>
+                        {action.title}
+                      </p>
+                      <p className={`text-sm ${
+                        action.type === 'overdue_rent' 
+                          ? 'text-red-600 dark:text-red-300'
+                          : 'text-amber-600 dark:text-amber-300'
+                      }`}>
+                        {action.description}
+                      </p>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      variant={action.type === 'overdue_rent' ? "destructive" : "outline"}
+                      onClick={() => handleUrgentAction(action)}
+                    >
+                      {action.action}
+                    </Button>
+                  </div>
+                ))}
               </div>
-              
-              <div className="flex items-center justify-between p-3 border border-amber-200 dark:border-amber-800 rounded-lg bg-amber-50 dark:bg-amber-900/20">
-                <div>
-                  <p className="font-medium text-amber-800 dark:text-amber-200">Urgent Maintenance</p>
-                  <p className="text-sm text-amber-600 dark:text-amber-300">Heating issue at Victoria Street</p>
-                </div>
-                <Button size="sm" variant="outline">View</Button>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No urgent actions at this time
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
