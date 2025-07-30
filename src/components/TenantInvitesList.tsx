@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, CheckCircle, RotateCcw, ExternalLink } from "lucide-react";
+import { Clock, CheckCircle, RotateCcw, ExternalLink, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Invitation {
@@ -95,6 +95,32 @@ const TenantInvitesList = () => {
     }
   };
 
+  const cancelInvitation = async (invitationId: string, invitedName: string) => {
+    try {
+      const { error } = await supabase
+        .from("tenant_invitations")
+        .delete()
+        .eq("id", invitationId);
+
+      if (error) throw error;
+
+      // Remove the invitation from local state
+      setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
+
+      toast({
+        title: "Invitation Cancelled",
+        description: `Invitation for ${invitedName} has been cancelled and removed`,
+      });
+    } catch (error) {
+      console.error("Error cancelling invitation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to cancel invitation",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusBadge = (status: string, expiresAt: string) => {
     const isExpired = new Date(expiresAt) < new Date();
     
@@ -179,6 +205,14 @@ const TenantInvitesList = () => {
                       >
                         <RotateCcw className="h-4 w-4 mr-1" />
                         Remind
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => cancelInvitation(invitation.id, invitation.invited_name || invitation.email)}
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
                       </Button>
                     </>
                   )}
