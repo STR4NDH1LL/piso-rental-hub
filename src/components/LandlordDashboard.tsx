@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Building2, CreditCard, Users, Wrench, TrendingUp, AlertTriangle } from "lucide-react";
+import { BarChart3, Building2, CreditCard, Users, Wrench, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import PropertyMap from "@/components/PropertyMap";
 
 interface DashboardStats {
@@ -13,6 +13,7 @@ interface DashboardStats {
   totalTenants: number;
   monthlyIncome: number;
   pendingMaintenance: number;
+  incomeChange: number;
 }
 
 interface Property {
@@ -40,6 +41,7 @@ const LandlordDashboard = () => {
     totalTenants: 0,
     monthlyIncome: 0,
     pendingMaintenance: 0,
+    incomeChange: 0,
   });
   const [properties, setProperties] = useState<Property[]>([]);
   const [allProperties, setAllProperties] = useState<any[]>([]);
@@ -81,6 +83,16 @@ const LandlordDashboard = () => {
         console.error("Tenancies error:", tenanciesError);
       }
 
+      // Fetch previous month's tenancies for income comparison
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      const { data: previousTenancies } = await supabase
+        .from("tenancies")
+        .select("rent_amount")
+        .eq("landlord_id", user.id)
+        .eq("status", "active")
+        .lte("lease_start_date", lastMonth.toISOString().split('T')[0]);
+
       // Fetch maintenance requests
       const { data: maintenanceData, error: maintenanceError } = await supabase
         .from("maintenance_requests")
@@ -108,6 +120,10 @@ const LandlordDashboard = () => {
       const totalProperties = allProperties?.length || 0;
       const occupiedProperties = tenancies?.length || 0;
       const totalIncome = tenancies?.reduce((sum, tenancy) => sum + (tenancy.rent_amount || 0), 0) || 0;
+      
+      // Calculate income change from previous month
+      const previousIncome = previousTenancies?.reduce((sum, tenancy) => sum + (tenancy.rent_amount || 0), 0) || 0;
+      const incomeChange = previousIncome > 0 ? ((totalIncome - previousIncome) / previousIncome) * 100 : 0;
 
       setStats({
         totalProperties,
@@ -115,6 +131,7 @@ const LandlordDashboard = () => {
         totalTenants: occupiedProperties,
         monthlyIncome: totalIncome,
         pendingMaintenance: maintenanceData?.length || 0,
+        incomeChange,
       });
 
       // Set urgent actions
@@ -252,9 +269,15 @@ const LandlordDashboard = () => {
               <div>
                 <h3 className="font-semibold">Monthly Income</h3>
                 <p className="text-2xl font-bold">£{stats.monthlyIncome.toLocaleString()}</p>
-                <p className="text-sm text-green-600 flex items-center">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +8.2%
+                <p className={`text-sm flex items-center ${
+                  stats.incomeChange >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {stats.incomeChange >= 0 ? (
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 mr-1" />
+                  )}
+                  {stats.incomeChange >= 0 ? '+' : ''}{stats.incomeChange.toFixed(1)}%
                 </p>
               </div>
             </div>
