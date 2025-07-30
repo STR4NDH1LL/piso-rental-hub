@@ -335,7 +335,9 @@ const LandlordDashboard = () => {
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
+                        e.nativeEvent.stopImmediatePropagation();
                         setUrgentActionsDialogOpen(true);
                       }}
                       className="flex items-center gap-1"
