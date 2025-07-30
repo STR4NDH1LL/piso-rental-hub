@@ -492,8 +492,7 @@ const LandlordDashboard = () => {
 
       {/* Urgent Actions Dialog */}
       <Dialog open={urgentActionsDialogOpen} onOpenChange={setUrgentActionsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] z-[9999] relative">
-          <div className="fixed inset-0 bg-black/50 z-[9998]" onClick={() => setUrgentActionsDialogOpen(false)} />
+        <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
