@@ -334,7 +334,8 @@ const LandlordDashboard = () => {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No urgent actions at this time
+                <p>No urgent actions at this time</p>
+                <p className="text-xs mt-2">Demo data will appear when you have tenants with overdue rent or urgent maintenance requests</p>
               </div>
             )}
           </CardContent>
