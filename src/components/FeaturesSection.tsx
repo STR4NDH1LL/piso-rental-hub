@@ -34,7 +34,10 @@ const ProcessSection = () => {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            Piso streamlines communication, payments, and property upkeep between landlords and tenants. Whether you're managing a single unit or multiple properties, Piso gives you the tools to simplify your rental experience—all in one place.
+            Rental management that just works. 
+            <span className="block text-gray-600 text-xl mt-2 font-normal">
+              Communication, payments, and maintenance—all sorted. 🎯
+            </span>
           </h2>
         </div>
         
