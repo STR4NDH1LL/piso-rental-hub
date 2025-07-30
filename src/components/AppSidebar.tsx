@@ -120,7 +120,7 @@ const AppSidebar = () => {
           <img 
             src="/lovable-uploads/7412162f-de95-47ed-9113-ff969ca9a62a.png" 
             alt="Piso Logo" 
-            className="h-16 w-auto"
+            className="h-20 w-auto"
           />
         </div>
       </div>
