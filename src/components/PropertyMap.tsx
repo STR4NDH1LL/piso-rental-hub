@@ -351,8 +351,10 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
             ref={miniMapContainer} 
             className={`h-48 rounded-lg bg-muted cursor-pointer transition-opacity ${isDialogOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} 
             onClick={(e) => {
-              // Prevent opening if other dialogs are already open
-              if (!document.querySelector('[data-state="open"]')) {
+              // Prevent opening if other dialogs are already open or if urgent actions dialog exists
+              const existingDialogs = document.querySelectorAll('[data-state="open"]');
+              const urgentActionsDialog = document.querySelector('[role="dialog"]');
+              if (existingDialogs.length === 0 && !urgentActionsDialog) {
                 setIsDialogOpen(true);
               }
             }} 
