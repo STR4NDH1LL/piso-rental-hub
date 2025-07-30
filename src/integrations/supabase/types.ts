@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      deposits: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          landlord_id: string
+          paid_at: string | null
+          property_id: string
+          requested_at: string
+          return_proposed_amount: number | null
+          return_proposed_at: string | null
+          return_reason: string | null
+          returned_at: string | null
+          status: string
+          tenant_id: string
+          tenant_responded_at: string | null
+          tenant_response: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          landlord_id: string
+          paid_at?: string | null
+          property_id: string
+          requested_at?: string
+          return_proposed_amount?: number | null
+          return_proposed_at?: string | null
+          return_reason?: string | null
+          returned_at?: string | null
+          status?: string
+          tenant_id: string
+          tenant_responded_at?: string | null
+          tenant_response?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          landlord_id?: string
+          paid_at?: string | null
+          property_id?: string
+          requested_at?: string
+          return_proposed_amount?: number | null
+          return_proposed_at?: string | null
+          return_reason?: string | null
+          returned_at?: string | null
+          status?: string
+          tenant_id?: string
+          tenant_responded_at?: string | null
+          tenant_response?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
