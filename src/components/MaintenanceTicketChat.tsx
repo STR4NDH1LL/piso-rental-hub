@@ -70,7 +70,7 @@ const MaintenanceTicketChat = ({ open, onOpenChange, onStatusUpdate, ticket }: M
   const [newStatus, setNewStatus] = useState(ticket.status);
   const [newPriority, setNewPriority] = useState(ticket.priority);
 
-  const statusOptions = ["pending", "in_progress", "completed"];
+  const statusOptions = ["pending", "In Progress", "Completed"];
   const priorityOptions = ["low", "medium", "high", "urgent"];
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
