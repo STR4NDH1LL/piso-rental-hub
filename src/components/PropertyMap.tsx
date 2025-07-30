@@ -292,18 +292,19 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
                   Expand
                 </Button>
               </DialogTrigger>
-              <DialogContent className="fixed inset-0 w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none border-0 bg-background z-50 flex flex-col">
-                <DialogHeader className="p-4 pb-0 flex-shrink-0">
-                  <DialogTitle>Property Locations</DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 flex gap-4 p-4 min-h-0">
-                  <div ref={mapContainer} className="flex-1 rounded-lg min-h-0" />
-                  {selectedProperty && (
-                    <div className="w-80 space-y-4 flex-shrink-0">
-                      <Card>
-                        <CardContent className="p-4">
-                          <h4 className="font-semibold text-lg">{selectedProperty.name}</h4>
-                          <p className="text-sm text-muted-foreground mb-2">{selectedProperty.address}</p>
+              <DialogContent className="fixed inset-0 w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none border-0 bg-background z-[9999] overflow-hidden">
+                <div className="absolute inset-0 flex flex-col">
+                  <DialogHeader className="p-4 pb-2 flex-shrink-0 bg-background border-b z-10">
+                    <DialogTitle>Property Locations</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex-1 flex">
+                    <div ref={mapContainer} className="w-full h-full" />
+                    {selectedProperty && (
+                      <div className="absolute top-20 right-4 w-80 bg-background rounded-lg shadow-lg border z-20">
+                        <Card>
+                          <CardContent className="p-4">
+                            <h4 className="font-semibold text-lg">{selectedProperty.name}</h4>
+                            <p className="text-sm text-muted-foreground mb-2">{selectedProperty.address}</p>
                           <div className="space-y-2">
                             <div className="flex justify-between">
                               <span className="text-sm">Rent:</span>
@@ -327,6 +328,7 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
                     </div>
                   )}
                 </div>
+              </div>
               </DialogContent>
             </Dialog>
           </div>
