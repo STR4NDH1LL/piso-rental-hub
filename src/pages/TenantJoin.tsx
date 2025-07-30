@@ -126,6 +126,8 @@ const TenantJoin = () => {
     setSigningUp(true);
 
     try {
+      console.log("Starting signup process...", { email: formData.email, fullName: formData.fullName });
+      
       // Sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -140,13 +142,52 @@ const TenantJoin = () => {
         }
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Failed to create user");
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
+      if (!authData.user) {
+        console.error("No user returned from signup");
+        throw new Error("Failed to create user");
+      }
 
-      // Wait a moment for the auth process to complete and trigger to run
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log("User created successfully:", authData.user.id);
+
+      // Wait for the trigger to create the profile
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Verify profile exists
+      const { data: profileData, error: profileCheckError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", authData.user.id)
+        .single();
+
+      if (profileCheckError || !profileData) {
+        console.error("Profile not found, creating manually:", profileCheckError);
+        
+        // Manual profile creation as fallback
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            user_id: authData.user.id,
+            email: formData.email,
+            full_name: formData.fullName,
+            phone: formData.phone || null,
+            role: 'tenant',
+          });
+
+        if (profileError) {
+          console.error("Manual profile creation failed:", profileError);
+          throw new Error("Failed to create user profile");
+        }
+        console.log("Profile created manually");
+      } else {
+        console.log("Profile found:", profileData);
+      }
 
       // Create tenancy record
+      console.log("Creating tenancy...");
       const { error: tenancyError } = await supabase
         .from("tenancies")
         .insert({
@@ -160,9 +201,14 @@ const TenantJoin = () => {
           status: "active",
         });
 
-      if (tenancyError) throw tenancyError;
+      if (tenancyError) {
+        console.error("Tenancy creation error:", tenancyError);
+        throw tenancyError;
+      }
+      console.log("Tenancy created successfully");
 
       // Update invitation status
+      console.log("Updating invitation status...");
       const { error: updateError } = await supabase
         .from("tenant_invitations")
         .update({
@@ -171,7 +217,11 @@ const TenantJoin = () => {
         })
         .eq("id", invitation.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Invitation update error:", updateError);
+        throw updateError;
+      }
+      console.log("Invitation updated successfully");
 
       toast({
         title: "Welcome to Piso!",
@@ -181,10 +231,11 @@ const TenantJoin = () => {
       // Redirect to dashboard
       navigate("/dashboard");
     } catch (error: any) {
-      console.error("Error signing up:", error);
+      console.error("Complete error object:", error);
+      console.error("Error signing up:", error.message, error.details, error.hint);
       toast({
         title: "Error",
-        description: error.message || "Failed to create account",
+        description: error.message || "Failed to create account. Please try again.",
         variant: "destructive",
       });
     } finally {
