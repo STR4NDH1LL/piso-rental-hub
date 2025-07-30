@@ -68,7 +68,17 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
     for (const property of properties) {
       const coordinates = await geocodeAddress(property.address, mapboxToken);
       if (coordinates) {
-        new mapboxgl.Marker({ color: '#3b82f6' })
+        // Create a custom marker element with the Piso logo
+        const markerElement = document.createElement('div');
+        markerElement.style.backgroundImage = 'url(/lovable-uploads/84009c04-1bad-445a-85f7-9bdf971a5d43.png)';
+        markerElement.style.backgroundSize = 'contain';
+        markerElement.style.backgroundRepeat = 'no-repeat';
+        markerElement.style.backgroundPosition = 'center';
+        markerElement.style.width = '24px';
+        markerElement.style.height = '24px';
+        markerElement.style.cursor = 'pointer';
+        
+        new mapboxgl.Marker({ element: markerElement })
           .setLngLat(coordinates)
           .addTo(miniMap.current);
       }
@@ -117,7 +127,17 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
           </div>
         `);
 
-        const marker = new mapboxgl.Marker({ color: '#3b82f6' })
+        // Create a custom marker element with the Piso logo
+        const markerElement = document.createElement('div');
+        markerElement.style.backgroundImage = 'url(/lovable-uploads/84009c04-1bad-445a-85f7-9bdf971a5d43.png)';
+        markerElement.style.backgroundSize = 'contain';
+        markerElement.style.backgroundRepeat = 'no-repeat';
+        markerElement.style.backgroundPosition = 'center';
+        markerElement.style.width = '32px';
+        markerElement.style.height = '32px';
+        markerElement.style.cursor = 'pointer';
+
+        const marker = new mapboxgl.Marker({ element: markerElement })
           .setLngLat(coordinates)
           .setPopup(popup)
           .addTo(map.current);
