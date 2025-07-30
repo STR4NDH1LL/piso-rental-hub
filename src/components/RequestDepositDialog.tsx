@@ -23,7 +23,7 @@ interface Tenancy {
   profiles: {
     full_name: string;
     email: string;
-  };
+  } | null;
   properties: Property;
 }
 
@@ -155,12 +155,14 @@ const RequestDepositDialog: React.FC<RequestDepositDialogProps> = ({
                 <SelectValue placeholder="Choose a property..." />
               </SelectTrigger>
               <SelectContent>
-                {tenancies.map((tenancy) => (
+                {tenancies
+                  .filter(tenancy => tenancy.profiles && tenancy.properties) // Only show tenancies with valid profiles and properties
+                  .map((tenancy) => (
                   <SelectItem key={tenancy.id} value={tenancy.id}>
                     <div className="flex flex-col text-left">
                       <span className="font-medium">{tenancy.properties.name}</span>
                       <span className="text-sm text-muted-foreground">
-                        {tenancy.profiles.full_name} - £{tenancy.properties.rent_amount}/month
+                        {tenancy.profiles!.full_name} - £{tenancy.properties.rent_amount}/month
                       </span>
                     </div>
                   </SelectItem>
@@ -203,10 +205,10 @@ const RequestDepositDialog: React.FC<RequestDepositDialogProps> = ({
               <CardContent className="p-3">
                 <div className="text-sm">
                   <div className="font-medium">
-                    {tenancies.find(t => t.id === selectedTenancy)?.profiles.full_name}
+                    {tenancies.find(t => t.id === selectedTenancy)?.profiles?.full_name || 'Unknown Tenant'}
                   </div>
                   <div className="text-muted-foreground">
-                    {tenancies.find(t => t.id === selectedTenancy)?.profiles.email}
+                    {tenancies.find(t => t.id === selectedTenancy)?.profiles?.email || 'No email available'}
                   </div>
                   <div className="text-muted-foreground">
                     {tenancies.find(t => t.id === selectedTenancy)?.properties.address}
