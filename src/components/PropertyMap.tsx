@@ -3,7 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Expand } from 'lucide-react';
+import { MapPin, Expand, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -294,8 +294,18 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
               </DialogTrigger>
               <DialogContent className="p-0 m-0 border-0 bg-transparent shadow-none max-w-none max-h-none w-screen h-screen">
                 <div className="fixed inset-0 bg-background z-50 flex flex-col">
-                  <DialogHeader className="p-4 pb-2 flex-shrink-0 bg-background border-b">
+                  <DialogHeader className="p-4 pb-2 flex-shrink-0 bg-background border-b flex flex-row items-center justify-between">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setIsDialogOpen(false)}
+                      className="mr-4"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Back
+                    </Button>
                     <DialogTitle>Property Locations</DialogTitle>
+                    <div className="w-16" /> {/* Spacer for centering */}
                   </DialogHeader>
                   <div className="flex-1 relative">
                     <div ref={mapContainer} className="absolute inset-0" />
