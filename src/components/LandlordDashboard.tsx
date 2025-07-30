@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Building2, CreditCard, Users, Wrench, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { BarChart3, Building2, CreditCard, Users, Wrench, TrendingUp, TrendingDown, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import PropertyMap from "@/components/PropertyMap";
 
 interface DashboardStats {
@@ -47,6 +48,7 @@ const LandlordDashboard = () => {
   const [allProperties, setAllProperties] = useState<any[]>([]);
   const [urgentActions, setUrgentActions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isUrgentActionsExpanded, setIsUrgentActionsExpanded] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -103,6 +105,9 @@ const LandlordDashboard = () => {
       if (maintenanceError) {
         console.error("Maintenance error:", maintenanceError);
       }
+
+      console.log("All maintenance data:", maintenanceData);
+      console.log("Urgent maintenance:", maintenanceData?.filter(req => req.priority === 'urgent'));
 
       // Fetch overdue rent tenancies
       const { data: overdueRent, error: overdueError } = await supabase
@@ -311,50 +316,80 @@ const LandlordDashboard = () => {
         <div className="md:col-span-2 grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Urgent Actions
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                <CardTitle>Urgent Actions</CardTitle>
+                {urgentActions.length > 0 && (
+                  <Badge variant="destructive" className="ml-2">
+                    {urgentActions.length}
+                  </Badge>
+                )}
+              </div>
+              {urgentActions.length > 2 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsUrgentActionsExpanded(!isUrgentActionsExpanded)}
+                  className="flex items-center gap-1"
+                >
+                  {isUrgentActionsExpanded ? (
+                    <>
+                      <ChevronUp className="h-4 w-4" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4" />
+                      Show All ({urgentActions.length})
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
             <CardDescription>Items requiring immediate attention</CardDescription>
           </CardHeader>
           <CardContent>
             {urgentActions.length > 0 ? (
-              <div className="space-y-4">
-                {urgentActions.map((action, index) => (
-                  <div 
-                    key={index}
-                    className={`flex items-center justify-between p-3 border rounded-lg ${
-                      action.type === 'overdue_rent' 
-                        ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
-                        : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20'
-                    }`}
-                  >
-                    <div>
-                      <p className={`font-medium ${
+              <ScrollArea className={isUrgentActionsExpanded ? "h-80" : "h-auto"}>
+                <div className="space-y-4">
+                  {(isUrgentActionsExpanded ? urgentActions : urgentActions.slice(0, 2)).map((action, index) => (
+                    <div 
+                      key={index}
+                      className={`flex items-center justify-between p-3 border rounded-lg ${
                         action.type === 'overdue_rent' 
-                          ? 'text-red-800 dark:text-red-200'
-                          : 'text-amber-800 dark:text-amber-200'
-                      }`}>
-                        {action.title}
-                      </p>
-                      <p className={`text-sm ${
-                        action.type === 'overdue_rent' 
-                          ? 'text-red-600 dark:text-red-300'
-                          : 'text-amber-600 dark:text-amber-300'
-                      }`}>
-                        {action.description}
-                      </p>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      variant={action.type === 'overdue_rent' ? "destructive" : "outline"}
-                      onClick={() => handleUrgentAction(action)}
+                          ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
+                          : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20'
+                      }`}
                     >
-                      {action.action}
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-medium ${
+                          action.type === 'overdue_rent' 
+                            ? 'text-red-800 dark:text-red-200'
+                            : 'text-amber-800 dark:text-amber-200'
+                        }`}>
+                          {action.title}
+                        </p>
+                        <p className={`text-sm truncate ${
+                          action.type === 'overdue_rent' 
+                            ? 'text-red-600 dark:text-red-300'
+                            : 'text-amber-600 dark:text-amber-300'
+                        }`}>
+                          {action.description}
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant={action.type === 'overdue_rent' ? "destructive" : "outline"}
+                        onClick={() => handleUrgentAction(action)}
+                        className="ml-3 flex-shrink-0"
+                      >
+                        {action.action}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <p>No urgent actions at this time</p>
