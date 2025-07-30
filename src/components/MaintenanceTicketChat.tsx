@@ -68,8 +68,10 @@ const MaintenanceTicketChat = ({ open, onOpenChange, onStatusUpdate, ticket }: M
     }
   ]);
   const [newStatus, setNewStatus] = useState(ticket.status);
+  const [newPriority, setNewPriority] = useState(ticket.priority);
 
-  const statusOptions = ["Pending", "In Progress", "Urgent", "Completed"];
+  const statusOptions = ["pending", "in_progress", "completed"];
+  const priorityOptions = ["low", "medium", "high", "urgent"];
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -194,6 +196,47 @@ const MaintenanceTicketChat = ({ open, onOpenChange, onStatusUpdate, ticket }: M
       });
     } catch (error: any) {
       console.error("Status update error:", error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePriorityUpdate = async () => {
+    if (newPriority === ticket.priority) return;
+
+    try {
+      // Update maintenance request priority in database
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .update({ priority: newPriority })
+        .eq('id', ticket.id);
+
+      if (error) throw error;
+
+      const priorityMessage = {
+        id: messages.length + 1,
+        type: "status",
+        content: `Priority updated from "${ticket.priority}" to "${newPriority}"`,
+        timestamp: "Just now",
+        sender: "System"
+      };
+
+      setMessages(prev => [...prev, priorityMessage]);
+      
+      // Call the callback to refresh the parent component
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+      
+      toast({
+        title: "Priority updated",
+        description: `Ticket priority changed to ${newPriority}`
+      });
+    } catch (error: any) {
+      console.error("Priority update error:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -338,6 +381,26 @@ const MaintenanceTicketChat = ({ open, onOpenChange, onStatusUpdate, ticket }: M
                   ))}
                 </select>
                 <Button size="sm" onClick={handleStatusUpdate}>
+                  Update
+                </Button>
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="priority-update">Update Priority</Label>
+              <div className="flex gap-2 mt-2">
+                <select 
+                  value={newPriority}
+                  onChange={(e) => setNewPriority(e.target.value)}
+                  className="flex-1 p-2 border rounded"
+                >
+                  {priorityOptions.map(priority => (
+                    <option key={priority} value={priority}>
+                      {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                <Button size="sm" onClick={handlePriorityUpdate}>
                   Update
                 </Button>
               </div>
