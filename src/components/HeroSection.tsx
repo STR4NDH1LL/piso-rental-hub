@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import WaitlistDialog from "@/components/WaitlistDialog";
 import heroBackground from "@/assets/hero-background.jpg";
 
 const HeroSection = () => {
@@ -34,12 +35,16 @@ const HeroSection = () => {
           
           {/* CTA Button */}
           <div className="animate-scale-in" style={{ animationDelay: "0.2s" }}>
-            <Button 
-              size="lg" 
-              className="bg-white text-black hover:bg-white/90 text-lg px-12 py-6 rounded-xl font-semibold shadow-2xl"
-            >
-              Join the Waitlist
-            </Button>
+            <WaitlistDialog
+              trigger={
+                <Button 
+                  size="lg" 
+                  className="bg-white text-black hover:bg-white/90 text-lg px-12 py-6 rounded-xl font-semibold shadow-2xl"
+                >
+                  Join the Waitlist
+                </Button>
+              }
+            />
           </div>
         </div>
       </div>

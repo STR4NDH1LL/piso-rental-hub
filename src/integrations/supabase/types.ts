@@ -605,6 +605,48 @@ export type Database = {
           },
         ]
       }
+      waitlist_signups: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          message: string | null
+          phone: string | null
+          property_count: number | null
+          referral_source: string | null
+          updated_at: string
+          user_type: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          property_count?: number | null
+          referral_source?: string | null
+          updated_at?: string
+          user_type: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          property_count?: number | null
+          referral_source?: string | null
+          updated_at?: string
+          user_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
