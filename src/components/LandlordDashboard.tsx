@@ -311,10 +311,12 @@ const LandlordDashboard = () => {
 
         {/* Property Map */}
         <div className="grid md:grid-cols-3 gap-6">
-          <PropertyMap 
-            properties={allProperties || []} 
-            className="md:col-span-1" 
-          />
+          <div className={urgentActionsDialogOpen ? "pointer-events-none opacity-50" : ""}>
+            <PropertyMap 
+              properties={allProperties || []} 
+              className="md:col-span-1" 
+            />
+          </div>
           
           {/* Recent Activity & Alerts */}
           <div className="md:col-span-2 grid md:grid-cols-2 gap-6">
@@ -490,7 +492,8 @@ const LandlordDashboard = () => {
 
       {/* Urgent Actions Dialog */}
       <Dialog open={urgentActionsDialogOpen} onOpenChange={setUrgentActionsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] z-[100]">
+        <DialogContent className="max-w-2xl max-h-[80vh] z-[9999] relative">
+          <div className="fixed inset-0 bg-black/50 z-[9998]" onClick={() => setUrgentActionsDialogOpen(false)} />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
