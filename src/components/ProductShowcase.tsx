@@ -1,5 +1,4 @@
 import { MessageCircle, Shield, Clock, Users, BarChart3, Home } from "lucide-react";
-import dashboardPreview from "@/assets/dashboard-preview.jpg";
 
 const ProductShowcase = () => {
   return (
@@ -18,7 +17,7 @@ const ProductShowcase = () => {
             </h2>
             
             <p className="text-gray-600 mb-6">
-              Manage properties, track payments, handle maintenance, and communicate with tenants from a single, intuitive dashboard.
+              Your rental sidekick for landlord-tenant harmony! Streamlined communication, effortless payments, and property upkeep made easy. Manage like a boss, all from one snazzy spot. 🏠✨
             </p>
             
             <div className="space-y-4 mb-8">
@@ -61,7 +60,7 @@ const ProductShowcase = () => {
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 shadow-xl">
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <img 
-                  src={dashboardPreview}
+                  src="/lovable-uploads/647d6e2c-428c-404c-9d44-598601a4f63a.png"
                   alt="Piso Dashboard Preview" 
                   className="w-full h-auto object-cover"
                 />
