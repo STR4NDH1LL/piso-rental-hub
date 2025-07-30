@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 
 interface Property {
@@ -28,21 +26,22 @@ interface PropertyMapProps {
 const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const miniMapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const miniMap = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState<string>('');
+  const map = useRef<L.Map | null>(null);
+  const miniMap = useRef<L.Map | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
+  const miniMarkersRef = useRef<L.Marker[]>([]);
 
-  // Geocoding function to convert address to coordinates
-  const geocodeAddress = async (address: string, token: string): Promise<[number, number] | null> => {
+  // Geocoding function using Nominatim (free OpenStreetMap service)
+  const geocodeAddress = async (address: string): Promise<[number, number] | null> => {
     try {
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${token}&limit=1`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
       );
       const data = await response.json();
-      if (data.features && data.features.length > 0) {
-        return data.features[0].center;
+      if (data && data.length > 0) {
+        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
       }
     } catch (error) {
       console.error('Geocoding error:', error);
@@ -50,132 +49,141 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
     return null;
   };
 
+  // Create custom icon using the Piso logo
+  const createCustomIcon = (size: [number, number]) => {
+    return L.divIcon({
+      html: `<div style="
+        background-image: url(/lovable-uploads/84009c04-1bad-445a-85f7-9bdf971a5d43.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      "></div>`,
+      className: 'custom-div-icon',
+      iconSize: size,
+      iconAnchor: [size[0] / 2, size[1]],
+    });
+  };
+
   // Initialize mini map
   const initializeMiniMap = async () => {
-    if (!miniMapContainer.current || !mapboxToken) return;
+    if (!miniMapContainer.current) return;
 
-    mapboxgl.accessToken = mapboxToken;
-    
-    miniMap.current = new mapboxgl.Map({
-      container: miniMapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+    // Clear existing markers
+    miniMarkersRef.current.forEach(marker => marker.remove());
+    miniMarkersRef.current = [];
+
+    if (miniMap.current) {
+      miniMap.current.remove();
+    }
+
+    miniMap.current = L.map(miniMapContainer.current, {
+      center: [51.5074, -0.1276], // Default to London
       zoom: 10,
-      center: [-0.1276, 51.5074], // Default to London
-      interactive: false,
+      zoomControl: false,
+      dragging: false,
+      touchZoom: false,
+      doubleClickZoom: false,
+      scrollWheelZoom: false,
+      boxZoom: false,
+      keyboard: false,
     });
 
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(miniMap.current);
+
     // Add property markers to mini map
+    const coordinates: [number, number][] = [];
     for (const property of properties) {
-      const coordinates = await geocodeAddress(property.address, mapboxToken);
-      if (coordinates) {
-        // Create a custom marker element with the Piso logo
-        const markerElement = document.createElement('div');
-        markerElement.style.backgroundImage = 'url(/lovable-uploads/84009c04-1bad-445a-85f7-9bdf971a5d43.png)';
-        markerElement.style.backgroundSize = 'contain';
-        markerElement.style.backgroundRepeat = 'no-repeat';
-        markerElement.style.backgroundPosition = 'center';
-        markerElement.style.width = '24px';
-        markerElement.style.height = '24px';
-        markerElement.style.cursor = 'pointer';
-        
-        new mapboxgl.Marker({ element: markerElement })
-          .setLngLat(coordinates)
-          .addTo(miniMap.current);
+      const coords = await geocodeAddress(property.address);
+      if (coords) {
+        coordinates.push(coords);
+        const marker = L.marker(coords, { 
+          icon: createCustomIcon([20, 20])
+        }).addTo(miniMap.current);
+        miniMarkersRef.current.push(marker);
       }
     }
 
     // Fit map to show all markers
-    if (properties.length > 0) {
-      const coordinates = await Promise.all(
-        properties.map(p => geocodeAddress(p.address, mapboxToken))
-      );
-      const validCoordinates = coordinates.filter(Boolean) as [number, number][];
-      
-      if (validCoordinates.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds();
-        validCoordinates.forEach(coord => bounds.extend(coord));
-        miniMap.current.fitBounds(bounds, { padding: 20 });
-      }
+    if (coordinates.length > 0) {
+      const group = new L.FeatureGroup(miniMarkersRef.current);
+      miniMap.current.fitBounds(group.getBounds().pad(0.1));
     }
   };
 
   // Initialize full map
   const initializeFullMap = async () => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = mapboxToken;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    if (map.current) {
+      map.current.remove();
+    }
+
+    map.current = L.map(mapContainer.current, {
+      center: [51.5074, -0.1276], // Default to London
       zoom: 10,
-      center: [-0.1276, 51.5074], // Default to London
     });
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map.current);
 
     // Add property markers to full map
+    const coordinates: [number, number][] = [];
     for (const property of properties) {
-      const coordinates = await geocodeAddress(property.address, mapboxToken);
-      if (coordinates) {
-        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+      const coords = await geocodeAddress(property.address);
+      if (coords) {
+        coordinates.push(coords);
+        
+        const popupContent = `
           <div class="p-2">
             <h3 class="font-semibold text-sm">${property.name}</h3>
             <p class="text-xs text-gray-600">${property.address}</p>
-            <p class="text-xs font-medium">£${property.rent_amount}/month</p>
+            <p class="text-xs font-medium">${property.rent_currency}${property.rent_amount}/month</p>
             <p class="text-xs">${property.bedrooms || 0} bed, ${property.bathrooms || 0} bath</p>
           </div>
-        `);
+        `;
 
-        // Create a custom marker element with the Piso logo
-        const markerElement = document.createElement('div');
-        markerElement.style.backgroundImage = 'url(/lovable-uploads/84009c04-1bad-445a-85f7-9bdf971a5d43.png)';
-        markerElement.style.backgroundSize = 'contain';
-        markerElement.style.backgroundRepeat = 'no-repeat';
-        markerElement.style.backgroundPosition = 'center';
-        markerElement.style.width = '32px';
-        markerElement.style.height = '32px';
-        markerElement.style.cursor = 'pointer';
+        const marker = L.marker(coords, { 
+          icon: createCustomIcon([32, 32])
+        })
+        .addTo(map.current)
+        .bindPopup(popupContent);
 
-        const marker = new mapboxgl.Marker({ element: markerElement })
-          .setLngLat(coordinates)
-          .setPopup(popup)
-          .addTo(map.current);
-
-        marker.getElement().addEventListener('click', () => {
+        marker.on('click', () => {
           setSelectedProperty(property);
         });
+
+        markersRef.current.push(marker);
       }
     }
 
     // Fit map to show all markers
-    if (properties.length > 0) {
-      const coordinates = await Promise.all(
-        properties.map(p => geocodeAddress(p.address, mapboxToken))
-      );
-      const validCoordinates = coordinates.filter(Boolean) as [number, number][];
-      
-      if (validCoordinates.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds();
-        validCoordinates.forEach(coord => bounds.extend(coord));
-        map.current.fitBounds(bounds, { padding: 50 });
-      }
+    if (coordinates.length > 0) {
+      const group = new L.FeatureGroup(markersRef.current);
+      map.current.fitBounds(group.getBounds().pad(0.1));
     }
   };
 
   useEffect(() => {
-    if (mapboxToken) {
-      initializeMiniMap();
-    }
+    initializeMiniMap();
     return () => {
       if (miniMap.current) {
         miniMap.current.remove();
       }
     };
-  }, [mapboxToken, properties]);
+  }, [properties]);
 
   useEffect(() => {
-    if (isDialogOpen && mapboxToken) {
+    if (isDialogOpen) {
       // Small delay to ensure dialog is rendered
       setTimeout(initializeFullMap, 100);
     }
@@ -184,38 +192,7 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
         map.current.remove();
       }
     };
-  }, [isDialogOpen, mapboxToken]);
-
-  if (!mapboxToken) {
-    return (
-      <Card className={className}>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold">Property Map</h3>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="mapbox-token">Mapbox Public Token</Label>
-              <Input
-                id="mapbox-token"
-                type="password"
-                placeholder="pk.eyJ1..."
-                value={mapboxToken}
-                onChange={(e) => setMapboxToken(e.target.value)}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Get your free token at{' '}
-              <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                mapbox.com
-              </a>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  }, [isDialogOpen]);
 
   return (
     <>
@@ -275,7 +252,7 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
                onClick={() => setIsDialogOpen(true)} />
           <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>{properties.length} properties</span>
-            <span>Click to expand</span>
+            <span>Click to expand • Free OpenStreetMap</span>
           </div>
         </CardContent>
       </Card>
