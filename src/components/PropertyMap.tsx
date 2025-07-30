@@ -69,130 +69,212 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
 
   // Initialize mini map
   const initializeMiniMap = async () => {
-    if (!miniMapContainer.current) return;
-
-    // Clear existing markers
-    miniMarkersRef.current.forEach(marker => marker.remove());
-    miniMarkersRef.current = [];
-
-    if (miniMap.current) {
-      miniMap.current.remove();
+    if (!miniMapContainer.current) {
+      console.log('Mini map container not available');
+      return;
     }
 
-    miniMap.current = L.map(miniMapContainer.current, {
-      center: [51.5074, -0.1276], // Default to London
-      zoom: 10,
-      zoomControl: false,
-      dragging: false,
-      touchZoom: false,
-      doubleClickZoom: false,
-      scrollWheelZoom: false,
-      boxZoom: false,
-      keyboard: false,
+    // Clear existing markers
+    miniMarkersRef.current.forEach(marker => {
+      try {
+        marker.remove();
+      } catch (e) {
+        console.log('Error removing mini marker:', e);
+      }
     });
+    miniMarkersRef.current = [];
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(miniMap.current);
-
-    // Add property markers to mini map
-    const coordinates: [number, number][] = [];
-    for (const property of properties) {
-      const coords = await geocodeAddress(property.address);
-      if (coords) {
-        coordinates.push(coords);
-        const marker = L.marker(coords, { 
-          icon: createCustomIcon([20, 20])
-        }).addTo(miniMap.current);
-        miniMarkersRef.current.push(marker);
+    // Clean up existing map
+    if (miniMap.current) {
+      try {
+        miniMap.current.remove();
+        miniMap.current = null;
+      } catch (e) {
+        console.log('Error removing mini map:', e);
       }
     }
 
-    // Fit map to show all markers
-    if (coordinates.length > 0) {
-      const group = new L.FeatureGroup(miniMarkersRef.current);
-      miniMap.current.fitBounds(group.getBounds().pad(0.1));
+    // Clear container content to ensure clean state
+    if (miniMapContainer.current) {
+      miniMapContainer.current.innerHTML = '';
+    }
+
+    try {
+      miniMap.current = L.map(miniMapContainer.current, {
+        center: [51.5074, -0.1276], // Default to London
+        zoom: 10,
+        zoomControl: false,
+        dragging: false,
+        touchZoom: false,
+        doubleClickZoom: false,
+        scrollWheelZoom: false,
+        boxZoom: false,
+        keyboard: false,
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(miniMap.current);
+
+      // Add property markers to mini map
+      const coordinates: [number, number][] = [];
+      for (const property of properties) {
+        const coords = await geocodeAddress(property.address);
+        if (coords && miniMap.current) {
+          coordinates.push(coords);
+          const marker = L.marker(coords, { 
+            icon: createCustomIcon([20, 20])
+          }).addTo(miniMap.current);
+          miniMarkersRef.current.push(marker);
+        }
+      }
+
+      // Fit map to show all markers
+      if (coordinates.length > 0 && miniMap.current) {
+        const group = new L.FeatureGroup(miniMarkersRef.current);
+        miniMap.current.fitBounds(group.getBounds().pad(0.1));
+      }
+    } catch (error) {
+      console.error('Error initializing mini map:', error);
     }
   };
 
   // Initialize full map
   const initializeFullMap = async () => {
-    if (!mapContainer.current) return;
-
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
-
-    if (map.current) {
-      map.current.remove();
+    if (!mapContainer.current) {
+      console.log('Full map container not available');
+      return;
     }
 
-    map.current = L.map(mapContainer.current, {
-      center: [51.5074, -0.1276], // Default to London
-      zoom: 10,
+    // Clear existing markers
+    markersRef.current.forEach(marker => {
+      try {
+        marker.remove();
+      } catch (e) {
+        console.log('Error removing marker:', e);
+      }
     });
+    markersRef.current = [];
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map.current);
-
-    // Add property markers to full map
-    const coordinates: [number, number][] = [];
-    for (const property of properties) {
-      const coords = await geocodeAddress(property.address);
-      if (coords) {
-        coordinates.push(coords);
-        
-        const popupContent = `
-          <div class="p-2">
-            <h3 class="font-semibold text-sm">${property.name}</h3>
-            <p class="text-xs text-gray-600">${property.address}</p>
-            <p class="text-xs font-medium">${property.rent_currency}${property.rent_amount}/month</p>
-            <p class="text-xs">${property.bedrooms || 0} bed, ${property.bathrooms || 0} bath</p>
-          </div>
-        `;
-
-        const marker = L.marker(coords, { 
-          icon: createCustomIcon([32, 32])
-        })
-        .addTo(map.current)
-        .bindPopup(popupContent);
-
-        marker.on('click', () => {
-          setSelectedProperty(property);
-        });
-
-        markersRef.current.push(marker);
+    // Clean up existing map
+    if (map.current) {
+      try {
+        map.current.remove();
+        map.current = null;
+      } catch (e) {
+        console.log('Error removing full map:', e);
       }
     }
 
-    // Fit map to show all markers
-    if (coordinates.length > 0) {
-      const group = new L.FeatureGroup(markersRef.current);
-      map.current.fitBounds(group.getBounds().pad(0.1));
+    // Clear container content to ensure clean state
+    if (mapContainer.current) {
+      mapContainer.current.innerHTML = '';
+    }
+
+    try {
+      map.current = L.map(mapContainer.current, {
+        center: [51.5074, -0.1276], // Default to London
+        zoom: 10,
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map.current);
+
+      // Add property markers to full map
+      const coordinates: [number, number][] = [];
+      for (const property of properties) {
+        const coords = await geocodeAddress(property.address);
+        if (coords && map.current) {
+          coordinates.push(coords);
+          
+          const popupContent = `
+            <div class="p-2">
+              <h3 class="font-semibold text-sm">${property.name}</h3>
+              <p class="text-xs text-gray-600">${property.address}</p>
+              <p class="text-xs font-medium">${property.rent_currency}${property.rent_amount}/month</p>
+              <p class="text-xs">${property.bedrooms || 0} bed, ${property.bathrooms || 0} bath</p>
+            </div>
+          `;
+
+          const marker = L.marker(coords, { 
+            icon: createCustomIcon([32, 32])
+          })
+          .addTo(map.current)
+          .bindPopup(popupContent);
+
+          marker.on('click', () => {
+            setSelectedProperty(property);
+          });
+
+          markersRef.current.push(marker);
+        }
+      }
+
+      // Fit map to show all markers
+      if (coordinates.length > 0 && map.current) {
+        const group = new L.FeatureGroup(markersRef.current);
+        map.current.fitBounds(group.getBounds().pad(0.1));
+      }
+    } catch (error) {
+      console.error('Error initializing full map:', error);
     }
   };
 
   useEffect(() => {
-    initializeMiniMap();
+    if (properties.length > 0) {
+      initializeMiniMap();
+    }
     return () => {
+      // Cleanup mini map
       if (miniMap.current) {
-        miniMap.current.remove();
+        try {
+          miniMap.current.remove();
+          miniMap.current = null;
+        } catch (e) {
+          console.log('Error cleaning up mini map:', e);
+        }
       }
+      // Cleanup markers
+      miniMarkersRef.current.forEach(marker => {
+        try {
+          marker.remove();
+        } catch (e) {
+          console.log('Error removing mini marker on cleanup:', e);
+        }
+      });
+      miniMarkersRef.current = [];
     };
   }, [properties]);
 
   useEffect(() => {
-    if (isDialogOpen) {
+    if (isDialogOpen && properties.length > 0) {
       // Small delay to ensure dialog is rendered
-      setTimeout(initializeFullMap, 100);
+      setTimeout(() => {
+        initializeFullMap();
+      }, 100);
     }
     return () => {
+      // Cleanup full map
       if (map.current) {
-        map.current.remove();
+        try {
+          map.current.remove();
+          map.current = null;
+        } catch (e) {
+          console.log('Error cleaning up full map:', e);
+        }
       }
+      // Cleanup markers
+      markersRef.current.forEach(marker => {
+        try {
+          marker.remove();
+        } catch (e) {
+          console.log('Error removing marker on cleanup:', e);
+        }
+      });
+      markersRef.current = [];
     };
-  }, [isDialogOpen]);
+  }, [isDialogOpen, properties]);
 
   return (
     <>
