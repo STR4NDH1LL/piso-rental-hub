@@ -1,4 +1,4 @@
-import { Github, Twitter, Linkedin, Mail } from "lucide-react";
+import { Github, Twitter, Linkedin, Mail, Instagram } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -46,25 +46,29 @@ const Footer = () => {
             <h3 className="font-semibold mb-4">Connect</h3>
             <div className="flex space-x-4">
               <a 
-                href="#" 
-                className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-muted rounded-lg"
-                aria-label="Twitter"
-              >
-                <Twitter size={20} />
-              </a>
-              <a 
-                href="#" 
+                href="https://www.linkedin.com/company/pisoapp" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-muted rounded-lg"
                 aria-label="LinkedIn"
               >
                 <Linkedin size={20} />
               </a>
               <a 
+                href="https://www.instagram.com/piso.app/?utm_source=ig_web_button_share_sheet" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-muted rounded-lg"
+                aria-label="Instagram"
+              >
+                <Instagram size={20} />
+              </a>
+              <a 
                 href="#" 
                 className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-muted rounded-lg"
-                aria-label="GitHub"
+                aria-label="Twitter"
               >
-                <Github size={20} />
+                <Twitter size={20} />
               </a>
               <a 
                 href="#" 
