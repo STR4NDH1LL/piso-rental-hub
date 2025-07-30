@@ -144,16 +144,18 @@ const LandlordDashboard = () => {
       
       // Add overdue rent actions
       if (overdueRent?.length) {
+        console.log("Overdue rent data:", overdueRent);
         overdueRent.forEach(tenancy => {
-          if (tenancy.profiles && tenancy.properties) {
+          if (tenancy.properties) {
             const daysDiff = Math.floor((new Date().getTime() - new Date(tenancy.rent_due_date).getTime()) / (1000 * 3600 * 24));
+            const tenantName = tenancy.profiles?.full_name || 'Unknown Tenant';
             actions.push({
               type: 'overdue_rent',
               title: 'Overdue Rent',
-              description: `${tenancy.profiles.full_name} - £${tenancy.rent_amount} (${daysDiff} days overdue)`,
+              description: `${tenantName} - £${tenancy.rent_amount} (${daysDiff} days overdue)`,
               action: 'Contact',
               tenantId: tenancy.tenant_id,
-              tenantName: tenancy.profiles.full_name,
+              tenantName: tenantName,
               amount: tenancy.rent_amount,
               daysDiff,
               propertyName: tenancy.properties.name
@@ -164,11 +166,11 @@ const LandlordDashboard = () => {
 
       // Add urgent maintenance actions
       if (maintenanceData?.length) {
-        maintenanceData.filter(req => req.priority === 'urgent').forEach(request => {
+        maintenanceData.filter(req => req.priority === 'urgent' || req.priority === 'high').forEach(request => {
           if (request.properties) {
             actions.push({
               type: 'urgent_maintenance',
-              title: 'Urgent Maintenance',
+              title: `${request.priority === 'urgent' ? 'Urgent' : 'High Priority'} Maintenance`,
               description: `${request.title} at ${request.properties.name}`,
               action: 'View',
               maintenanceId: request.id,
