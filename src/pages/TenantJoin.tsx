@@ -143,24 +143,8 @@ const TenantJoin = () => {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create user");
 
-      // Wait a moment for the auth process to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Ensure profile exists (in case the trigger didn't work)
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert({
-          user_id: authData.user.id,
-          email: formData.email,
-          full_name: formData.fullName,
-          phone: formData.phone || null,
-          role: 'tenant',
-        });
-
-      if (profileError) {
-        console.error("Profile creation error:", profileError);
-        // Continue anyway, as the trigger might have created it
-      }
+      // Wait a moment for the auth process to complete and trigger to run
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Create tenancy record
       const { error: tenancyError } = await supabase
