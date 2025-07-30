@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Building2, CreditCard, Users, Wrench, TrendingUp, AlertTriangle } from "lucide-react";
+import PropertyMap from "@/components/PropertyMap";
 
 interface DashboardStats {
   totalProperties: number;
@@ -41,6 +42,7 @@ const LandlordDashboard = () => {
     pendingMaintenance: 0,
   });
   const [properties, setProperties] = useState<Property[]>([]);
+  const [allProperties, setAllProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -117,6 +119,19 @@ const LandlordDashboard = () => {
       });
 
       setProperties(propertiesForDisplay);
+      
+      // Create simplified properties for map component
+      const mapProperties = (allProperties || []).map(property => ({
+        id: property.id,
+        name: property.name,
+        address: property.address,
+        rent_amount: property.rent_amount,
+        rent_currency: property.rent_currency,
+        property_type: property.property_type,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+      }));
+      setAllProperties(mapProperties);
 
     } catch (error) {
       console.error("Dashboard error:", error);
@@ -197,8 +212,15 @@ const LandlordDashboard = () => {
         </Card>
       </div>
 
-      {/* Recent Activity & Alerts */}
-      <div className="grid md:grid-cols-2 gap-6">
+      {/* Property Map */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <PropertyMap 
+          properties={allProperties || []} 
+          className="md:col-span-1" 
+        />
+        
+        {/* Recent Activity & Alerts */}
+        <div className="md:col-span-2 grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -269,6 +291,7 @@ const LandlordDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Recent Properties */}
