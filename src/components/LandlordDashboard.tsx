@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { BarChart3, Building2, CreditCard, Users, Wrench, TrendingUp, TrendingDown, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { BarChart3, Building2, CreditCard, Users, Wrench, TrendingUp, TrendingDown, AlertTriangle, ChevronDown } from "lucide-react";
 import PropertyMap from "@/components/PropertyMap";
 
 interface DashboardStats {
@@ -49,7 +49,7 @@ const LandlordDashboard = () => {
   const [allProperties, setAllProperties] = useState<any[]>([]);
   const [urgentActions, setUrgentActions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [urgentActionsDialogOpen, setUrgentActionsDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -235,302 +235,311 @@ const LandlordDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Building2 className="h-6 w-6 text-primary" />
+    <>
+      <div className="space-y-6">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Properties</h3>
+                  <p className="text-2xl font-bold">{stats.totalProperties}</p>
+                  <p className="text-sm text-muted-foreground">{stats.totalProperties - stats.occupiedProperties} vacant</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold">Properties</h3>
-                <p className="text-2xl font-bold">{stats.totalProperties}</p>
-                <p className="text-sm text-muted-foreground">{stats.totalProperties - stats.occupiedProperties} vacant</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <Users className="h-6 w-6 text-green-600" />
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                  <Users className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Tenants</h3>
+                  <p className="text-2xl font-bold">{stats.totalTenants}</p>
+                  <p className="text-sm text-muted-foreground">All active</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold">Tenants</h3>
-                <p className="text-2xl font-bold">{stats.totalTenants}</p>
-                <p className="text-sm text-muted-foreground">All active</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                <CreditCard className="h-6 w-6 text-blue-600" />
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                  <CreditCard className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Monthly Income</h3>
+                  <p className="text-2xl font-bold">£{stats.monthlyIncome.toLocaleString()}</p>
+                  <p className={`text-sm flex items-center ${
+                    stats.incomeChange >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {stats.incomeChange >= 0 ? (
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3 mr-1" />
+                    )}
+                    {stats.incomeChange >= 0 ? '+' : ''}{stats.incomeChange.toFixed(1)}%
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold">Monthly Income</h3>
-                <p className="text-2xl font-bold">£{stats.monthlyIncome.toLocaleString()}</p>
-                <p className={`text-sm flex items-center ${
-                  stats.incomeChange >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {stats.incomeChange >= 0 ? (
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3 mr-1" />
-                  )}
-                  {stats.incomeChange >= 0 ? '+' : ''}{stats.incomeChange.toFixed(1)}%
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                <Wrench className="h-6 w-6 text-orange-600" />
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                  <Wrench className="h-6 w-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Maintenance</h3>
+                  <p className="text-2xl font-bold">{stats.pendingMaintenance}</p>
+                  <p className="text-sm text-muted-foreground">Pending requests</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold">Maintenance</h3>
-                <p className="text-2xl font-bold">{stats.pendingMaintenance}</p>
-                <p className="text-sm text-muted-foreground">Pending requests</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Property Map */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <PropertyMap 
-          properties={allProperties || []} 
-          className="md:col-span-1" 
-        />
-        
-        {/* Recent Activity & Alerts */}
-        <div className="md:col-span-2 grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
-                <CardTitle>Urgent Actions</CardTitle>
-                {urgentActions.length > 0 && (
-                  <Badge variant="destructive" className="ml-2">
-                    {urgentActions.length}
-                  </Badge>
-                )}
-              </div>
-              {urgentActions.length > 2 && (
-                <Dialog>
-                  <DialogTrigger asChild>
+        {/* Property Map */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <PropertyMap 
+            properties={allProperties || []} 
+            className="md:col-span-1" 
+          />
+          
+          {/* Recent Activity & Alerts */}
+          <div className="md:col-span-2 grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    <CardTitle>Urgent Actions</CardTitle>
+                    {urgentActions.length > 0 && (
+                      <Badge variant="destructive" className="ml-2">
+                        {urgentActions.length}
+                      </Badge>
+                    )}
+                  </div>
+                  {urgentActions.length > 2 && (
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUrgentActionsDialogOpen(true);
+                      }}
                       className="flex items-center gap-1"
                     >
                       <ChevronDown className="h-4 w-4" />
                       View All ({urgentActions.length})
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh]">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2">
-                        <AlertTriangle className="h-5 w-5 text-amber-500" />
-                        All Urgent Actions ({urgentActions.length})
-                      </DialogTitle>
-                    </DialogHeader>
-                    <ScrollArea className="h-[60vh] pr-4">
-                      <div className="space-y-4">
-                        {urgentActions.map((action, index) => (
-                          <div 
-                            key={index}
-                            className={`flex items-center justify-between p-3 border rounded-lg ${
-                              action.type === 'overdue_rent' 
-                                ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
-                                : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20'
-                            }`}
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className={`font-medium ${
-                                action.type === 'overdue_rent' 
-                                  ? 'text-red-800 dark:text-red-200'
-                                  : 'text-amber-800 dark:text-amber-200'
-                              }`}>
-                                {action.title}
-                              </p>
-                              <p className={`text-sm ${
-                                action.type === 'overdue_rent' 
-                                  ? 'text-red-600 dark:text-red-300'
-                                  : 'text-amber-600 dark:text-amber-300'
-                              }`}>
-                                {action.description}
-                              </p>
-                            </div>
-                            <Button 
-                              size="sm" 
-                              variant={action.type === 'overdue_rent' ? "destructive" : "outline"}
-                              onClick={() => handleUrgentAction(action)}
-                              className="ml-3 flex-shrink-0"
-                            >
-                              {action.action}
-                            </Button>
-                          </div>
-                        ))}
+                  )}
+                </div>
+                <CardDescription>Items requiring immediate attention</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {urgentActions.length > 0 ? (
+                  <div className="space-y-4">
+                    {urgentActions.slice(0, 2).map((action, index) => (
+                      <div 
+                        key={index}
+                        className={`flex items-center justify-between p-3 border rounded-lg ${
+                          action.type === 'overdue_rent' 
+                            ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
+                            : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-medium ${
+                            action.type === 'overdue_rent' 
+                              ? 'text-red-800 dark:text-red-200'
+                              : 'text-amber-800 dark:text-amber-200'
+                          }`}>
+                            {action.title}
+                          </p>
+                          <p className={`text-sm truncate ${
+                            action.type === 'overdue_rent' 
+                              ? 'text-red-600 dark:text-red-300'
+                              : 'text-amber-600 dark:text-amber-300'
+                          }`}>
+                            {action.description}
+                          </p>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant={action.type === 'overdue_rent' ? "destructive" : "outline"}
+                          onClick={() => handleUrgentAction(action)}
+                          className="ml-3 flex-shrink-0"
+                        >
+                          {action.action}
+                        </Button>
                       </div>
-                    </ScrollArea>
-                  </DialogContent>
-                </Dialog>
-              )}
-            </div>
-            <CardDescription>Items requiring immediate attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {urgentActions.length > 0 ? (
-              <div className="space-y-4">
-                {urgentActions.slice(0, 2).map((action, index) => (
-                  <div 
-                    key={index}
-                    className={`flex items-center justify-between p-3 border rounded-lg ${
-                      action.type === 'overdue_rent' 
-                        ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
-                        : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20'
-                    }`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-medium ${
-                        action.type === 'overdue_rent' 
-                          ? 'text-red-800 dark:text-red-200'
-                          : 'text-amber-800 dark:text-amber-200'
-                      }`}>
-                        {action.title}
-                      </p>
-                      <p className={`text-sm truncate ${
-                        action.type === 'overdue_rent' 
-                          ? 'text-red-600 dark:text-red-300'
-                          : 'text-amber-600 dark:text-amber-300'
-                      }`}>
-                        {action.description}
-                      </p>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      variant={action.type === 'overdue_rent' ? "destructive" : "outline"}
-                      onClick={() => handleUrgentAction(action)}
-                      className="ml-3 flex-shrink-0"
-                    >
-                      {action.action}
-                    </Button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No urgent actions at this time</p>
-                <p className="text-xs mt-2">Demo data will appear when you have tenants with overdue rent or urgent maintenance requests</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No urgent actions at this time</p>
+                    <p className="text-xs mt-2">Demo data will appear when you have tenants with overdue rent or urgent maintenance requests</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Quick Stats
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Occupancy Rate</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 bg-muted rounded-full h-2">
+                        <div className="bg-primary h-2 rounded-full" style={{ width: `${stats.totalProperties > 0 ? (stats.occupiedProperties / stats.totalProperties) * 100 : 0}%` }}></div>
+                      </div>
+                      <span className="text-sm font-semibold">{stats.totalProperties > 0 ? Math.round((stats.occupiedProperties / stats.totalProperties) * 100) : 0}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Payment Collection</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 bg-muted rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: "92%" }}></div>
+                      </div>
+                      <span className="text-sm font-semibold">92%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Maintenance Response</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 bg-muted rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: "88%" }}></div>
+                      </div>
+                      <span className="text-sm font-semibold">88%</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Recent Properties */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Quick Stats
+              <Building2 className="h-5 w-5" />
+              Property Overview
             </CardTitle>
+            <CardDescription>Your most recent properties</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Occupancy Rate</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-24 bg-muted rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: `${stats.totalProperties > 0 ? (stats.occupiedProperties / stats.totalProperties) * 100 : 0}%` }}></div>
+              {properties.length > 0 ? (
+                properties.map((property) => (
+                  <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-semibold">{property.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {property.address} • {property.bedrooms} bed, {property.bathrooms} bath
+                      </p>
+                      {property.tenancies.length > 0 ? (
+                        <p className="text-sm">Tenant: {property.tenancies[0].tenant.full_name}</p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Available</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">£{property.rent_amount.toLocaleString()}/month</p>
+                      <Badge variant={property.tenancies.length > 0 ? "default" : "secondary"}>
+                        {property.tenancies.length > 0 ? "Occupied" : "Vacant"}
+                      </Badge>
+                    </div>
                   </div>
-                  <span className="text-sm font-semibold">{stats.totalProperties > 0 ? Math.round((stats.occupiedProperties / stats.totalProperties) * 100) : 0}%</span>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No properties found
                 </div>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Payment Collection</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-24 bg-muted rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{ width: "92%" }}></div>
-                  </div>
-                  <span className="text-sm font-semibold">92%</span>
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Maintenance Response</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-24 bg-muted rounded-full h-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: "88%" }}></div>
-                  </div>
-                  <span className="text-sm font-semibold">88%</span>
-                </div>
-              </div>
+              )}
+            </div>
+            
+            <div className="mt-4 pt-4 border-t">
+              <Button className="w-full" onClick={() => navigate("/properties")}>View All Properties</Button>
             </div>
           </CardContent>
         </Card>
-        </div>
       </div>
 
-      {/* Recent Properties */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Property Overview
-          </CardTitle>
-          <CardDescription>Your most recent properties</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {properties.length > 0 ? (
-              properties.map((property) => (
-                <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h4 className="font-semibold">{property.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {property.address} • {property.bedrooms} bed, {property.bathrooms} bath
+      {/* Urgent Actions Dialog */}
+      <Dialog open={urgentActionsDialogOpen} onOpenChange={setUrgentActionsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              All Urgent Actions ({urgentActions.length})
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh] pr-4">
+            <div className="space-y-4">
+              {urgentActions.map((action, index) => (
+                <div 
+                  key={index}
+                  className={`flex items-center justify-between p-3 border rounded-lg ${
+                    action.type === 'overdue_rent' 
+                      ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
+                      : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20'
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-medium ${
+                      action.type === 'overdue_rent' 
+                        ? 'text-red-800 dark:text-red-200'
+                        : 'text-amber-800 dark:text-amber-200'
+                    }`}>
+                      {action.title}
                     </p>
-                    {property.tenancies.length > 0 ? (
-                      <p className="text-sm">Tenant: {property.tenancies[0].tenant.full_name}</p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Available</p>
-                    )}
+                    <p className={`text-sm ${
+                      action.type === 'overdue_rent' 
+                        ? 'text-red-600 dark:text-red-300'
+                        : 'text-amber-600 dark:text-amber-300'
+                    }`}>
+                      {action.description}
+                    </p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">£{property.rent_amount.toLocaleString()}/month</p>
-                    <Badge variant={property.tenancies.length > 0 ? "default" : "secondary"}>
-                      {property.tenancies.length > 0 ? "Occupied" : "Vacant"}
-                    </Badge>
-                  </div>
+                  <Button 
+                    size="sm" 
+                    variant={action.type === 'overdue_rent' ? "destructive" : "outline"}
+                    onClick={() => {
+                      handleUrgentAction(action);
+                      setUrgentActionsDialogOpen(false);
+                    }}
+                    className="ml-3 flex-shrink-0"
+                  >
+                    {action.action}
+                  </Button>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No properties found
-              </div>
-            )}
-          </div>
-          
-          <div className="mt-4 pt-4 border-t">
-            <Button className="w-full" onClick={() => navigate("/properties")}>View All Properties</Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
