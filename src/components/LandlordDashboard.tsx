@@ -96,12 +96,12 @@ const LandlordDashboard = () => {
         .eq("status", "active")
         .lte("lease_start_date", lastMonth.toISOString().split('T')[0]);
 
-      // Fetch maintenance requests
+      // Fetch maintenance requests (all active - not completed)
       const { data: maintenanceData, error: maintenanceError } = await supabase
         .from("maintenance_requests")
         .select("*, properties(name, address)")
         .eq("landlord_id", user.id)
-        .eq("status", "pending");
+        .neq("status", "Completed");
 
       if (maintenanceError) {
         console.error("Maintenance error:", maintenanceError);
@@ -302,7 +302,7 @@ const LandlordDashboard = () => {
                 <div>
                   <h3 className="font-semibold">Maintenance</h3>
                   <p className="text-2xl font-bold">{stats.pendingMaintenance}</p>
-                  <p className="text-sm text-muted-foreground">Pending requests</p>
+                  <p className="text-sm text-muted-foreground">Active requests</p>
                 </div>
               </div>
             </CardContent>
