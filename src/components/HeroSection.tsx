@@ -17,11 +17,6 @@ const HeroSection = () => {
       
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
         <div className="animate-fade-in">
-          {/* Trust indicator */}
-          <p className="text-sm md:text-base text-white/80 mb-8 font-medium tracking-wide">
-            Trusted by property managers and tenants worldwide
-          </p>
-          
           {/* Main headline */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
             Built for the future of{" "}
