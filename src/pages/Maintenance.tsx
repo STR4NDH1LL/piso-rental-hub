@@ -278,6 +278,11 @@ const Maintenance = () => {
         <MaintenanceTicketChat 
           open={showTicketChat} 
           onOpenChange={setShowTicketChat}
+          onStatusUpdate={async () => {
+            if (profile?.user_id && profile?.role) {
+              await fetchTickets(profile.user_id, profile.role);
+            }
+          }}
           ticket={selectedTicket}
         />
       )}

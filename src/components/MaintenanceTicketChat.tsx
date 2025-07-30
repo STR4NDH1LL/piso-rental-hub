@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 interface MaintenanceTicketChatProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onStatusUpdate?: () => void; // Add callback for status updates
   ticket: {
     id: string;
     title: string;
@@ -25,7 +26,7 @@ interface MaintenanceTicketChatProps {
   };
 }
 
-const MaintenanceTicketChat = ({ open, onOpenChange, ticket }: MaintenanceTicketChatProps) => {
+const MaintenanceTicketChat = ({ open, onOpenChange, onStatusUpdate, ticket }: MaintenanceTicketChatProps) => {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
@@ -182,11 +183,17 @@ const MaintenanceTicketChat = ({ open, onOpenChange, ticket }: MaintenanceTicket
 
       setMessages(prev => [...prev, statusMessage]);
       
+      // Call the callback to refresh the parent component
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+      
       toast({
         title: "Status updated",
         description: `Ticket status changed to ${newStatus}`
       });
     } catch (error: any) {
+      console.error("Status update error:", error);
       toast({
         title: "Error",
         description: error.message,
