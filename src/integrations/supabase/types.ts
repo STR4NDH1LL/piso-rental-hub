@@ -545,6 +545,66 @@ export type Database = {
           },
         ]
       }
+      tenant_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invited_at: string
+          invited_name: string | null
+          landlord_id: string
+          property_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_at?: string
+          invited_name?: string | null
+          landlord_id: string
+          property_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_at?: string
+          invited_name?: string | null
+          landlord_id?: string
+          property_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_invitations_landlord_id_fkey"
+            columns: ["landlord_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "tenant_invitations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -21,6 +21,7 @@ import Messaging from "./pages/Messaging";
 import Calendar from "./pages/Calendar";
 import Deposits from "./pages/Deposits";
 import Verification from "./pages/Verification";
+import TenantJoin from "./pages/TenantJoin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/deposits" element={<Deposits />} />
           <Route path="/verification" element={<Verification />} />
           <Route path="/calendar" element={<Calendar />} />
+          <Route path="/join/:token" element={<TenantJoin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

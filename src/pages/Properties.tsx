@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Plus, Users, Eye, Edit, ArrowLeft } from "lucide-react";
 import AddPropertyDialog from "@/components/AddPropertyDialog";
 import PropertyDetailDialog from "@/components/PropertyDetailDialog";
+import TenantInviteDialog from "@/components/TenantInviteDialog";
+import TenantInvitesList from "@/components/TenantInvitesList";
 import { useToast } from "@/hooks/use-toast";
 
 const Properties = () => {
@@ -79,10 +81,16 @@ const Properties = () => {
           </Button>
           <h1 className="text-3xl font-bold">Properties</h1>
         </div>
-        <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Property
-        </Button>
+        <div className="flex gap-2">
+          <TenantInviteDialog 
+            properties={properties.map(p => ({ id: p.id, name: p.name, address: p.address }))}
+            onInviteSent={fetchProperties}
+          />
+          <Button onClick={() => setShowAddDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Property
+          </Button>
+        </div>
       </div>
       
       <div className="space-y-6">
@@ -250,6 +258,9 @@ const Properties = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Tenant Invitations */}
+        <TenantInvitesList />
       </div>
       
       <AddPropertyDialog 
