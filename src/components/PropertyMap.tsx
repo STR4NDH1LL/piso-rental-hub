@@ -285,7 +285,12 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
               <MapPin className="h-5 w-5 text-primary" />
               <h3 className="font-semibold">Property Map</h3>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              // Only allow opening if not triggered by other dialogs
+              if (!open || !document.querySelector('[data-state="open"]')) {
+                setIsDialogOpen(open);
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Expand className="h-4 w-4 mr-1" />
@@ -345,7 +350,12 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
           <div 
             ref={miniMapContainer} 
             className={`h-48 rounded-lg bg-muted cursor-pointer transition-opacity ${isDialogOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} 
-            onClick={() => setIsDialogOpen(true)} 
+            onClick={(e) => {
+              // Prevent opening if other dialogs are already open
+              if (!document.querySelector('[data-state="open"]')) {
+                setIsDialogOpen(true);
+              }
+            }} 
           />
           <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>{properties.length} properties</span>
