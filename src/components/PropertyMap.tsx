@@ -248,8 +248,11 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
               </DialogContent>
             </Dialog>
           </div>
-          <div ref={miniMapContainer} className="h-48 rounded-lg bg-muted cursor-pointer" 
-               onClick={() => setIsDialogOpen(true)} />
+          <div 
+            ref={miniMapContainer} 
+            className={`h-48 rounded-lg bg-muted cursor-pointer transition-opacity ${isDialogOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} 
+            onClick={() => setIsDialogOpen(true)} 
+          />
           <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>{properties.length} properties</span>
             <span>Click to expand • Free OpenStreetMap</span>
