@@ -68,9 +68,12 @@ const AppSidebar = () => {
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Maintenance", url: "/maintenance", icon: Wrench },
     { title: "Deposits", url: "/deposits", icon: PoundSterling },
-    { title: "Verification", url: "/verification", icon: Shield },
     { title: "Chat", url: "/chat", icon: MessageCircle },
     { title: "Payments", url: "/payments", icon: CreditCard },
+  ];
+
+  const tenantBottomItems = [
+    { title: "Verification", url: "/verification", icon: Shield },
   ];
 
   const landlordItems = [
@@ -81,12 +84,12 @@ const AppSidebar = () => {
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Payments", url: "/payments", icon: Wallet },
     { title: "Deposits", url: "/deposits", icon: PoundSterling },
-    { title: "Verification", url: "/verification", icon: Shield },
     { title: "Maintenance", url: "/maintenance", icon: Wrench },
     { title: "Messaging", url: "/messaging", icon: MessageCircle },
   ];
 
   const items = profile?.role === "tenant" ? tenantItems : landlordItems;
+  const bottomItems = profile?.role === "tenant" ? tenantBottomItems : [];
   
   const isActive = (path: string) => currentPath === path;
 
@@ -147,6 +150,29 @@ const AppSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Bottom items for tenants only */}
+        {bottomItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {bottomItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={isActive(item.url) ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}
+                    >
+                      <Link to={item.url}>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>

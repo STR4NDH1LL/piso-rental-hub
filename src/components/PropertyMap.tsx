@@ -292,15 +292,15 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
                   Expand
                 </Button>
               </DialogTrigger>
-              <DialogContent className="fixed inset-0 w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none border-0 bg-background z-[9999] overflow-hidden">
-                <div className="absolute inset-0 flex flex-col">
-                  <DialogHeader className="p-4 pb-2 flex-shrink-0 bg-background border-b z-10">
+              <DialogContent className="p-0 m-0 border-0 bg-transparent shadow-none max-w-none max-h-none w-screen h-screen">
+                <div className="fixed inset-0 bg-background z-50 flex flex-col">
+                  <DialogHeader className="p-4 pb-2 flex-shrink-0 bg-background border-b">
                     <DialogTitle>Property Locations</DialogTitle>
                   </DialogHeader>
-                  <div className="flex-1 flex">
-                    <div ref={mapContainer} className="w-full h-full" />
+                  <div className="flex-1 relative">
+                    <div ref={mapContainer} className="absolute inset-0" />
                     {selectedProperty && (
-                      <div className="absolute top-20 right-4 w-80 bg-background rounded-lg shadow-lg border z-20">
+                      <div className="absolute top-4 right-4 w-80 bg-background rounded-lg shadow-xl border z-10">
                         <Card>
                           <CardContent className="p-4">
                             <h4 className="font-semibold text-lg">{selectedProperty.name}</h4>
