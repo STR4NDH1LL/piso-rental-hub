@@ -154,6 +154,48 @@ export type Database = {
           },
         ]
       }
+      id_verifications: {
+        Row: {
+          created_at: string
+          document_type: string | null
+          id: string
+          id_document_url: string | null
+          rejected_reason: string | null
+          selfie_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          verification_notes: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_type?: string | null
+          id?: string
+          id_document_url?: string | null
+          rejected_reason?: string | null
+          selfie_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          verification_notes?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_type?: string | null
+          id?: string
+          id_document_url?: string | null
+          rejected_reason?: string | null
+          selfie_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verification_notes?: string | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       maintenance_requests: {
         Row: {
           created_at: string

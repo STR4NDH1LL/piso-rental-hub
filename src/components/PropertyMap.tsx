@@ -210,7 +210,7 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ properties, className }) => {
                   Expand
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[100vw] max-h-[100vh] w-screen h-screen p-6 m-0 rounded-none border-0 bg-background">
+              <DialogContent className="fixed inset-0 w-screen h-screen max-w-none max-h-none p-6 m-0 rounded-none border-0 bg-background z-50">
                 <DialogHeader className="pb-4">
                   <DialogTitle>Property Locations</DialogTitle>
                 </DialogHeader>

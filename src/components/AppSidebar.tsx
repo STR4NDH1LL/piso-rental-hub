@@ -26,6 +26,7 @@ import {
   BarChart3,
   Wallet,
   PoundSterling,
+  Shield,
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ const AppSidebar = () => {
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Maintenance", url: "/maintenance", icon: Wrench },
     { title: "Deposits", url: "/deposits", icon: PoundSterling },
+    { title: "Verification", url: "/verification", icon: Shield },
     { title: "Chat", url: "/chat", icon: MessageCircle },
     { title: "Payments", url: "/payments", icon: CreditCard },
   ];
@@ -79,6 +81,7 @@ const AppSidebar = () => {
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Payments", url: "/payments", icon: Wallet },
     { title: "Deposits", url: "/deposits", icon: PoundSterling },
+    { title: "Verification", url: "/verification", icon: Shield },
     { title: "Maintenance", url: "/maintenance", icon: Wrench },
     { title: "Messaging", url: "/messaging", icon: MessageCircle },
   ];
