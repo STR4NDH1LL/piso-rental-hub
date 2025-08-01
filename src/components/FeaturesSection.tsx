@@ -10,7 +10,7 @@ const ProcessSection = () => {
     {
       icon: MessageCircle,
       title: "In-App Communication", 
-      description: "Stay connected with tenants and landlords through our built-in chat system for seamless communication."
+      description: "Stay connected with tenants and renters through our built-in chat system for seamless communication."
     },
     {
       icon: Wrench,

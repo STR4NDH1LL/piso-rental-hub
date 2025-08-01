@@ -11,7 +11,7 @@ const ValueProposition = () => {
             for everyone
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
-            We believe rental management should be simple and transparent. Piso eliminates the friction between landlords and tenants, creating a seamless experience that saves time, reduces stress, and builds better relationships. Whether you're managing multiple properties or renting your first apartment, our platform adapts to your needs.
+            We believe rental management should be simple and transparent. Piso eliminates the friction between renters and tenants, creating a seamless experience that saves time, reduces stress, and builds better relationships. Whether you're managing multiple properties or renting your first apartment, our platform adapts to your needs.
           </p>
         </div>
         
