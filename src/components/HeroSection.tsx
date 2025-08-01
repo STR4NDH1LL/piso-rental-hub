@@ -25,7 +25,7 @@ const HeroSection = () => {
           
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto font-light">
-            Modern rental management platform for renters and tenants — all in one place
+            Modern rental management platform for property managers and tenants — all in one place
           </p>
           
           {/* CTA Button */}

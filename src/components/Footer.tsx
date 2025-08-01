@@ -15,7 +15,7 @@ const Footer = () => {
               />
             </div>
             <p className="text-muted-foreground max-w-md">
-              Modern rental management for renters and tenants — all in one place.
+              Modern rental management for property managers and tenants — all in one place.
             </p>
           </div>
           
