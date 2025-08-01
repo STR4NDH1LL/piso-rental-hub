@@ -34,26 +34,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/role-selection" element={<RoleSelection />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/rent" element={<Rent />} />
-          <Route path="/documents" element={<Documents />} />
-          <Route path="/maintenance" element={<Maintenance />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/payments" element={<Payments />} />
-          <Route path="/properties" element={<Properties />} />
-          <Route path="/tenants" element={<Tenants />} />
-          <Route path="/messaging" element={<Messaging />} />
-          <Route path="/deposits" element={<Deposits />} />
-          <Route path="/verification" element={<Verification />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/join/:token" element={<TenantJoin />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          {/* All other routes redirect to landing page for waitlist mode */}
+          <Route path="*" element={<Index />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

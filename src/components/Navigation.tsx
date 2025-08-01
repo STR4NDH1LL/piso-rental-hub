@@ -20,110 +20,18 @@ const Navigation = () => {
             />
           </div>
           
-          {/* Desktop Navigation Links */}
+          {/* Desktop Navigation Links - Hidden for waitlist mode */}
           <div className="hidden md:flex items-center space-x-8">
-            <button 
-              onClick={() => navigate("/features")}
-              className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
-            >
-              Features
-            </button>
-            <button 
-              onClick={() => navigate("/about")}
-              className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
-            >
-              About
-            </button>
-            <button 
-              onClick={() => navigate("/contact")}
-              className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
-            >
-              Contact
-            </button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 mr-2"
-              onClick={() => navigate("/auth")}
-            >
-              Log In
-            </Button>
-            <Button 
-              size="sm"
-              onClick={() => navigate("/auth")}
-            >
-              Get Started
-            </Button>
+            {/* Navigation removed for waitlist landing page */}
           </div>
 
-          {/* Mobile Navigation */}
+          {/* Mobile Navigation - Hidden for waitlist mode */}
           <div className="md:hidden flex items-center space-x-2">
-            {/* Mobile Login Button */}
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              onClick={() => navigate("/auth")}
-            >
-              Log In
-            </Button>
-            
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            {/* Navigation removed for waitlist landing page */}
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-gray-200">
-            <div className="flex flex-col space-y-4 pt-4">
-              <button 
-                onClick={() => {
-                  navigate("/features");
-                  setIsMenuOpen(false);
-                }}
-                className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium text-left"
-              >
-                Features
-              </button>
-              <button 
-                onClick={() => {
-                  navigate("/about");
-                  setIsMenuOpen(false);
-                }}
-                className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium text-left"
-              >
-                About
-              </button>
-              <button 
-                onClick={() => {
-                  navigate("/contact");
-                  setIsMenuOpen(false);
-                }}
-                className="text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium text-left"
-              >
-                Contact
-              </button>
-              <Button 
-                size="sm"
-                onClick={() => {
-                  navigate("/auth");
-                  setIsMenuOpen(false);
-                }}
-                className="w-fit"
-              >
-                Get Started
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* Mobile Menu Dropdown - Hidden for waitlist mode */}
       </div>
     </nav>
   );
