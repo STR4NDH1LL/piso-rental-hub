@@ -11,7 +11,7 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/db6ee567-84e4-4336-b96a-95855d76ff0f.png" 
                 alt="Piso Logo" 
-                className="h-32 w-auto"
+                className="h-20 w-auto"
               />
             </div>
             <p className="text-muted-foreground max-w-md">
