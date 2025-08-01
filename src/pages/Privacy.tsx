@@ -3,7 +3,7 @@ const Privacy = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-6 py-16">
         <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
-        <p className="text-muted-foreground mb-8">Effective Date: January 1, 2024</p>
+        <p className="text-muted-foreground mb-8">Effective Date: August 1, 2025</p>
         
         <div className="prose prose-gray max-w-none">
           <section className="mb-8">
@@ -144,17 +144,6 @@ const Privacy = () => {
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">13. Contact Us</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              If you have questions about this Privacy Policy or our privacy practices, please contact us at:
-            </p>
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="font-semibold">Piso</p>
-              <p className="text-muted-foreground">Email: privacy@piso.app</p>
-              <p className="text-muted-foreground">Privacy Officer</p>
-            </div>
-          </section>
         </div>
       </div>
     </div>
