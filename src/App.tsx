@@ -23,6 +23,7 @@ import Deposits from "./pages/Deposits";
 import Verification from "./pages/Verification";
 import TenantJoin from "./pages/TenantJoin";
 import Privacy from "./pages/Privacy";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/admin" element={<Admin />} />
           {/* All other routes redirect to landing page for waitlist mode */}
           <Route path="*" element={<Index />} />
         </Routes>
