@@ -5,7 +5,7 @@ const ProcessSection = () => {
     {
       icon: CreditCard,
       title: "Easy & Secure Payments",
-      description: "Accept rent payments through Apple Pay, Visa, Mastercard, and Revolut with bank-level security."
+      description: "Track rent payments through Apple Pay, Visa, Mastercard, and Revolut with bank-level security."
     },
     {
       icon: MessageCircle,
