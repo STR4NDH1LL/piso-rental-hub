@@ -22,7 +22,7 @@ import Calendar from "./pages/Calendar";
 import Deposits from "./pages/Deposits";
 import Verification from "./pages/Verification";
 import TenantJoin from "./pages/TenantJoin";
-import NotFound from "./pages/NotFound";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +34,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/privacy" element={<Privacy />} />
           {/* All other routes redirect to landing page for waitlist mode */}
           <Route path="*" element={<Index />} />
         </Routes>

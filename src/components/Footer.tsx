@@ -33,11 +33,6 @@ const Footer = () => {
                   Privacy Policy
                 </a>
               </li>
-              <li>
-                <a href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact Us
-                </a>
-              </li>
             </ul>
           </div>
           
@@ -62,20 +57,6 @@ const Footer = () => {
                 aria-label="Instagram"
               >
                 <Instagram size={20} />
-              </a>
-              <a 
-                href="#" 
-                className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-muted rounded-lg"
-                aria-label="Twitter"
-              >
-                <Twitter size={20} />
-              </a>
-              <a 
-                href="#" 
-                className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-muted rounded-lg"
-                aria-label="Email"
-              >
-                <Mail size={20} />
               </a>
             </div>
           </div>
